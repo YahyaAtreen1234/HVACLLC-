@@ -1,0 +1,140 @@
+import type { Faq, Service, ServiceArea, TeamMember } from "@/types";
+import { seedContentIfEmpty } from "./seed";
+import { areasStore, faqsStore, servicesStore, teamStore } from "./store";
+
+/**
+ * What the public pages read.
+ *
+ * These adapt database rows back into the same shapes the components already
+ * expect (`Service`, `TeamMember`, `Faq`, `ServiceArea`), so moving content
+ * into the database did not require rewriting any component.
+ *
+ * `seedContentIfEmpty()` runs on first access, which makes a fresh install
+ * self-populating without a separate setup step.
+ */
+
+function ensureSeeded(): void {
+  seedContentIfEmpty();
+}
+
+export function getServices(): Service[] {
+  ensureSeeded();
+  return servicesStore.all().map((row) => ({
+    slug: row.slug,
+    name: row.name,
+    title: row.description,
+    summary: row.summary,
+    icon: row.icon,
+    category: row.category as Service["category"],
+    includes: row.includes,
+    signs: row.signs,
+    body: row.body,
+    image: {
+      src: row.imageSrc,
+      alt: row.imageAlt,
+      width: 1200,
+      height: 800,
+    },
+    related: row.related,
+  }));
+}
+
+export function getService(slug: string): Service | undefined {
+  return getServices().find((service) => service.slug === slug);
+}
+
+export function getFeaturedServices(limit = 6): Service[] {
+  ensureSeeded();
+  const featured = servicesStore
+    .all()
+    .filter((row) => row.featured)
+    .map((row) => row.slug);
+
+  const services = getServices();
+  const picked = services.filter((service) => featured.includes(service.slug));
+  return (picked.length ? picked : services).slice(0, limit);
+}
+
+export function getRelatedServices(slug: string, limit = 3): Service[] {
+  const service = getService(slug);
+  if (!service) return [];
+  const all = getServices();
+  return service.related
+    .map((related) => all.find((entry) => entry.slug === related))
+    .filter((entry): entry is Service => Boolean(entry))
+    .slice(0, limit);
+}
+
+export function getTeam(): TeamMember[] {
+  ensureSeeded();
+  return teamStore.all().map((row) => ({
+    name: row.name,
+    role: row.role,
+    bio: row.bio,
+    credentials: row.credentials.length ? row.credentials : undefined,
+    image: {
+      src: row.imageSrc,
+      alt: row.imageAlt,
+      width: 800,
+      height: 800,
+    },
+    // A member is treated as placeholder while the name still reads like a prompt.
+    isPlaceholder: /^add /i.test(row.name),
+  }));
+}
+
+export function getFaqs(): Faq[] {
+  ensureSeeded();
+  return faqsStore.all().map((row) => ({
+    question: row.question,
+    answer: row.answer,
+    topic: row.topic as Faq["topic"],
+  }));
+}
+
+export function getFaqsByTopic(topic: string, limit?: number): Faq[] {
+  const matching = getFaqs().filter((faq) => faq.topic === topic);
+  return typeof limit === "number" ? matching.slice(0, limit) : matching;
+}
+
+/** A short mixed set for the home page — spread across topics, not just the first few. */
+export function getHomeFaqs(limit = 4): Faq[] {
+  const all = getFaqs();
+  const seen = new Set<string>();
+  const picked: Faq[] = [];
+
+  for (const faq of all) {
+    if (picked.length >= limit) break;
+    if (seen.has(faq.topic)) continue;
+    seen.add(faq.topic);
+    picked.push(faq);
+  }
+
+  // Top up from whatever is left if there were not enough distinct topics.
+  for (const faq of all) {
+    if (picked.length >= limit) break;
+    if (!picked.includes(faq)) picked.push(faq);
+  }
+
+  return picked;
+}
+
+export function getTeamIsPlaceholder(): boolean {
+  return getTeam().some((member) => member.isPlaceholder);
+}
+
+export function getServiceAreasArePlaceholder(): boolean {
+  return getServiceAreas().some((area) => area.isPlaceholder);
+}
+
+export function getServiceAreas(): ServiceArea[] {
+  ensureSeeded();
+  return areasStore.all().map((row) => ({
+    slug: row.slug,
+    city: row.city,
+    state: row.state,
+    neighborhoods: row.neighborhoods,
+    // Kept in sync with the seeded placeholder cities.
+    isPlaceholder: /^(primary|second|third) city$/i.test(row.city),
+  }));
+}
