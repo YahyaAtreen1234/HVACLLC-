@@ -23,6 +23,7 @@ import {
   type ServiceAreaInput,
 } from "@/server/content/store";
 import { sqliteLeadStore } from "@/server/leads/store";
+import { saveUpload } from "@/server/content/uploads";
 import { isLeadStatus } from "@/server/leads/types";
 import type { IconName } from "@/types";
 
@@ -123,6 +124,33 @@ const commas = (form: FormData, key: string): string[] =>
     .map((entry) => entry.trim())
     .filter(Boolean);
 
+/**
+ * Resolves the stored image path for a form submission.
+ *
+ * A newly picked file wins. Otherwise the hidden `<name>Src` field carries
+ * whatever was already on the record, so saving without touching the photo
+ * keeps it — and clearing it explicitly sends an empty string.
+ *
+ * An upload that fails validation throws, which surfaces in the admin UI
+ * rather than silently saving the record with no picture.
+ */
+async function imagePath(
+  form: FormData,
+  field: string,
+  folder: "team" | "services" | "general",
+): Promise<string> {
+  const file = form.get(field);
+  const existing = text(form, `${field}Src`);
+
+  if (file instanceof File && file.size > 0) {
+    const result = await saveUpload(file, folder);
+    if (!result.ok) throw new Error(result.error);
+    return result.path;
+  }
+
+  return existing;
+}
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -134,7 +162,7 @@ function slugify(value: string): string {
 // Services
 // ---------------------------------------------------------------------------
 
-function serviceFromForm(form: FormData): ServiceInput {
+async function serviceFromForm(form: FormData): Promise<ServiceInput> {
   const name = text(form, "name");
   return {
     slug: text(form, "slug") || slugify(name),
@@ -148,7 +176,7 @@ function serviceFromForm(form: FormData): ServiceInput {
     includes: lines(form, "includes"),
     signs: lines(form, "signs"),
     related: commas(form, "related"),
-    imageSrc: text(form, "imageSrc"),
+    imageSrc: await imagePath(form, "image", "services"),
     imageAlt: text(form, "imageAlt"),
     featured: checked(form, "featured"),
     published: checked(form, "published"),
@@ -160,7 +188,7 @@ export async function saveService(formData: FormData): Promise<void> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = serviceFromForm(formData);
+  const input = await serviceFromForm(formData);
 
   if (id) servicesStore.update(id, input);
   else servicesStore.create(input);
@@ -180,13 +208,13 @@ export async function deleteService(formData: FormData): Promise<void> {
 // Team
 // ---------------------------------------------------------------------------
 
-function teamFromForm(form: FormData): TeamMemberInput {
+async function teamFromForm(form: FormData): Promise<TeamMemberInput> {
   return {
     name: text(form, "name"),
     role: text(form, "role"),
     bio: text(form, "bio"),
     credentials: commas(form, "credentials"),
-    imageSrc: text(form, "imageSrc"),
+    imageSrc: await imagePath(form, "image", "team"),
     imageAlt: text(form, "imageAlt"),
     published: checked(form, "published"),
     sortOrder: number(form, "sortOrder"),
@@ -197,7 +225,7 @@ export async function saveTeamMember(formData: FormData): Promise<void> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = teamFromForm(formData);
+  const input = await teamFromForm(formData);
 
   if (id) teamStore.update(id, input);
   else teamStore.create(input);

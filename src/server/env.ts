@@ -10,6 +10,14 @@ export const env = {
   /** Where the SQLite file lives. Relative paths resolve from the project root. */
   leadsDbPath: process.env.LEADS_DB_PATH ?? ".data/leads.db",
 
+  /**
+   * Where admin-uploaded images are written.
+   *
+   * Deliberately not inside `public/` — Next snapshots that directory at build
+   * time, so runtime writes there are never served in production.
+   */
+  uploadsPath: process.env.UPLOADS_PATH ?? ".data/uploads",
+
   /** Optional outbound webhook (Zapier/Make/CRM). */
   webhookUrl: process.env.SERVICE_REQUEST_WEBHOOK_URL ?? "",
 

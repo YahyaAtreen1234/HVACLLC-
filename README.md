@@ -99,6 +99,35 @@ Forgot the password? Run the same command again to set a new one.
 Content changes appear on the live site immediately — `revalidatePath` refreshes
 the affected pages on save, so there is no rebuild or redeploy step.
 
+### Photos
+
+Service and team forms have a real file picker with a live preview. Choose an
+image, save, and it appears on the public site immediately — no copying files
+onto the server, no paths to type.
+
+**Uploads are not stored in `public/`.** Next copies that directory into the
+build output once, at build time, so a file written there while the server is
+running is never served in production — it works in `next dev` and then 404s
+on the live site. Uploads go to `.data/uploads/` instead (override with
+`UPLOADS_PATH`) and are served by `src/app/uploads/[...path]/route.ts`.
+
+That gives them the same persistence rule as the database: **fine on a VPS or
+container with a mounted volume; on a host with an ephemeral filesystem
+(Vercel, Netlify functions) they vanish between deploys** and you want S3, R2
+or Blob storage instead — swap the body of `saveUpload`/`readUpload` in
+`src/server/content/uploads.ts`.
+
+Validation worth knowing about:
+
+- The type is decided by **magic bytes, not the filename or the browser's
+  declared MIME type** — both are attacker-controlled. A PHP shell or an `.exe`
+  renamed `photo.png` is rejected.
+- The uploaded filename is discarded and a UUID generated, so `../../.env` is
+  not a usable filename.
+- The serving route confirms the resolved path is still inside the uploads
+  directory, and sends `X-Content-Type-Options: nosniff`.
+- 8 MB cap, JPEG/PNG/WebP/AVIF only.
+
 ### Where content lives
 
 Content moved out of the TypeScript data files and into the database. The files

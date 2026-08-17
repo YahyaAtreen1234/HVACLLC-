@@ -1,12 +1,13 @@
 import { deleteTeamMember, saveTeamMember } from "../../actions";
 import { Card, Checkbox, Field, SubmitRow, TextArea } from "../../ui";
 import type { DbTeamMember } from "@/server/content/store";
+import { ImageField } from "../../ImageField";
 
 export function TeamForm({ member }: { member?: DbTeamMember }) {
   const editing = Boolean(member);
 
   return (
-    <form action={saveTeamMember} className="space-y-6">
+    <form action={saveTeamMember} encType="multipart/form-data" className="space-y-6">
       {member ? <input type="hidden" name="id" value={member.id} /> : null}
 
       <Card className="space-y-5">
@@ -48,21 +49,18 @@ export function TeamForm({ member }: { member?: DbTeamMember }) {
 
       <Card className="space-y-5">
         <h2 className="font-display text-lg font-bold text-ink-950">Photo</h2>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field
-            label="Image path"
-            name="imageSrc"
-            defaultValue={member?.imageSrc}
-            placeholder="/images/team/sam.jpg"
-            hint="Upload the file to /public/images/team/ then put the path here."
-          />
-          <Field
-            label="Alt text"
-            name="imageAlt"
-            defaultValue={member?.imageAlt}
-            hint="Describe the photo for screen readers."
-          />
-        </div>
+        <ImageField
+          name="image"
+          label="Photo"
+          currentPath={member?.imageSrc}
+          hint="A head-and-shoulders photo works best. JPEG, PNG, WebP or AVIF, up to 8 MB."
+        />
+        <Field
+          label="Alt text"
+          name="imageAlt"
+          defaultValue={member?.imageAlt}
+          hint="Describe the photo for screen readers — for example: Sam, lead technician, in uniform."
+        />
       </Card>
 
       <Card className="space-y-4">

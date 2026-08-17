@@ -8,6 +8,7 @@ import {
   TextArea,
 } from "../../ui";
 import type { DbService } from "@/server/content/store";
+import { ImageField } from "../../ImageField";
 
 const ICONS = [
   "snowflake", "flame", "heat-pump", "wrench", "shield", "wind", "duct",
@@ -27,7 +28,7 @@ export function ServiceForm({ service }: { service?: DbService }) {
   const editing = Boolean(service);
 
   return (
-    <form action={saveService} className="space-y-6">
+    <form action={saveService} encType="multipart/form-data" className="space-y-6">
       {service ? <input type="hidden" name="id" value={service.id} /> : null}
 
       <Card className="space-y-5">
@@ -130,21 +131,18 @@ export function ServiceForm({ service }: { service?: DbService }) {
       <Card className="space-y-5">
         <h2 className="font-display text-lg font-bold text-ink-950">Photo</h2>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field
-            label="Image path"
-            name="imageSrc"
-            defaultValue={service?.imageSrc}
-            placeholder="/images/services/ac-repair.jpg"
-            hint="Leave blank to show a labelled placeholder."
-          />
-          <Field
-            label="Alt text"
-            name="imageAlt"
-            defaultValue={service?.imageAlt}
-            hint="Describe the photo for screen readers and search engines."
-          />
-        </div>
+        <ImageField
+          name="image"
+          label="Photo"
+          currentPath={service?.imageSrc}
+          hint="Leave empty to show a labelled placeholder. JPEG, PNG, WebP or AVIF, up to 8 MB."
+        />
+        <Field
+          label="Alt text"
+          name="imageAlt"
+          defaultValue={service?.imageAlt}
+          hint="Describe what is happening in the photo, for screen readers and search engines."
+        />
       </Card>
 
       <Card className="space-y-4">
