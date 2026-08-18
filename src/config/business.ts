@@ -36,10 +36,14 @@ export const business = {
   // ---------------------------------------------------------------------------
   // Identity
   // ---------------------------------------------------------------------------
-  /** TODO: replace with the real trading name. */
-  name: "Your HVAC Company",
-  /** TODO: replace with the registered legal entity name. */
-  legalName: "Your HVAC Company LLC",
+  name: "HVAC Heating and Cooling",
+  /**
+   * TODO: confirm this matches the entity registered with the Arizona
+   * Corporation Commission. It appears in the footer copyright and in the
+   * structured data search engines read, so a guess at the suffix is worth
+   * five minutes checking.
+   */
+  legalName: "HVAC Heating and Cooling LLC",
   /** TODO: replace with a one-line positioning statement you can stand behind. */
   tagline: "Heating and cooling done right the first time",
   /** TODO: replace with a short factual description of the business. */
@@ -59,8 +63,7 @@ export const business = {
   },
   /** TODO: set to null if there is no separate emergency line. */
   emergencyPhone: null as { display: string; e164: string } | null,
-  /** TODO: replace with the real inbox that is actually monitored. */
-  email: "info@example.com",
+  email: "info@hvacheatingcooling.com",
 
   address: {
     /** TODO: replace with the real street address (or leave `showAddress` false). */
@@ -96,18 +99,22 @@ export const business = {
   // ---------------------------------------------------------------------------
   // Hours
   // ---------------------------------------------------------------------------
-  /** TODO: confirm every row against the real schedule. */
+  /** Office hours. Weekends closed — after-hours calls go to the emergency line. */
   hours: {
-    monday: { open: "08:00", close: "17:00" },
-    tuesday: { open: "08:00", close: "17:00" },
-    wednesday: { open: "08:00", close: "17:00" },
-    thursday: { open: "08:00", close: "17:00" },
-    friday: { open: "08:00", close: "17:00" },
-    saturday: { open: "09:00", close: "14:00" },
+    monday: { open: "07:00", close: "18:00" },
+    tuesday: { open: "07:00", close: "18:00" },
+    wednesday: { open: "07:00", close: "18:00" },
+    thursday: { open: "07:00", close: "18:00" },
+    friday: { open: "07:00", close: "18:00" },
+    saturday: { open: null, close: null },
     sunday: { open: null, close: null },
   } satisfies Record<WeekDay, BusinessHours>,
-  /** IANA timezone used to describe the hours. TODO: confirm. */
-  timezone: "America/New_York",
+  /**
+   * Arizona does not observe daylight saving, so this must be America/Phoenix
+   * rather than a generic US zone — otherwise the opening hours published in
+   * structured data drift by an hour for half the year.
+   */
+  timezone: "America/Phoenix",
 
   // ---------------------------------------------------------------------------
   // Emergency service
@@ -204,14 +211,13 @@ export type Business = typeof business;
  * development-only warning banner stops rendering.
  */
 export const PLACEHOLDER_FIELDS: string[] = [
-  "business.name / legalName / tagline / description",
+  "business.legalName — confirm the registered entity name and suffix",
+  "business.tagline / description",
   "business.foundedYear",
-  "business.phone (display + e164)",
-  "business.email",
-  "business.address (street, city, state, postalCode, mapUrl, mapEmbedUrl)",
-  "business.hours + timezone",
+  "business.phone — (555) 555-0100 is a reserved fictional number, nobody can call it",
+  "business.address (street, postalCode, mapUrl, mapEmbedUrl)",
   "business.responseTime (only promise what the office actually hits)",
-  "business.emergency.offered + available247 (never claim 24/7 unless true)",
+  "business.emergency.available247 — the brand board claims 24/7, confirm before saying it",
   "business.social.* (all empty)",
   "business.credentials.* (intentionally empty — never invent)",
   "data/service-areas.ts — every city is a placeholder",
