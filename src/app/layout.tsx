@@ -71,11 +71,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    // `suppressHydrationWarning` here is about browser extensions, not about
+    // anything this app renders. Password managers, translators and similar
+    // add their own attributes to <html> and <body> before React hydrates,
+    // which React then reports as a mismatch against the server HTML.
+    //
+    // It is deliberately only on these two elements: the flag applies one
+    // level deep — to that element's own attributes and text — and does not
+    // extend to its children. Real hydration bugs anywhere inside the app
+    // are still reported.
     <html
       lang="en"
       className={`${archivo.variable} ${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-sand-50">{children}</body>
+      <body
+        className="flex min-h-full flex-col bg-sand-50"
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }
