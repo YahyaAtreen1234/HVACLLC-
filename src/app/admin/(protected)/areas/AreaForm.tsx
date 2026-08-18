@@ -50,6 +50,13 @@ export function AreaForm({ area }: { area?: DbServiceArea }) {
           hint="Optional. E.g. a travel surcharge or limited coverage."
         />
 
+        <Checkbox
+          label="Still unconfirmed — keep out of search results"
+          name="isPlaceholder"
+          defaultChecked={area?.isPlaceholder ?? true}
+          hint="Tick this until you are certain the office dispatches to this town. While ticked, the city page is set to noindex and stays out of the sitemap, so you never rank for a place you cannot actually drive to."
+        />
+
         <div className="grid gap-5 sm:grid-cols-2">
           <Checkbox
             label="Published"

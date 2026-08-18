@@ -123,6 +123,18 @@ export function getTeamIsPlaceholder(): boolean {
   return getTeam().some((member) => member.isPlaceholder);
 }
 
+/** One service area by slug, for its dedicated page. */
+export function getServiceArea(slug: string): ServiceArea | undefined {
+  return getServiceAreas().find((area) => area.slug === slug);
+}
+
+/** Nearby areas, for cross-linking between city pages. */
+export function getNearbyAreas(slug: string, limit = 6): ServiceArea[] {
+  return getServiceAreas()
+    .filter((area) => area.slug !== slug)
+    .slice(0, limit);
+}
+
 export function getServiceAreasArePlaceholder(): boolean {
   return getServiceAreas().some((area) => area.isPlaceholder);
 }
@@ -134,7 +146,6 @@ export function getServiceAreas(): ServiceArea[] {
     city: row.city,
     state: row.state,
     neighborhoods: row.neighborhoods,
-    // Kept in sync with the seeded placeholder cities.
-    isPlaceholder: /^(primary|second|third) city$/i.test(row.city),
+    isPlaceholder: row.isPlaceholder,
   }));
 }

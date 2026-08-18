@@ -403,6 +403,12 @@ export interface DbServiceArea {
   note: string;
   published: boolean;
   sortOrder: number;
+  /**
+   * True while this town is unconfirmed seed data. Placeholder areas are kept
+   * out of the sitemap and set to noindex, so the site never ranks for a town
+   * the office does not actually dispatch to.
+   */
+  isPlaceholder: boolean;
 }
 
 export type ServiceAreaInput = Omit<DbServiceArea, "id">;
@@ -417,6 +423,7 @@ function toArea(row: Row): DbServiceArea {
     note: str(row, "note"),
     published: bool(row, "published"),
     sortOrder: num(row, "sort_order"),
+    isPlaceholder: bool(row, "is_placeholder"),
   };
 }
 
@@ -441,8 +448,8 @@ export const areasStore = {
     getDb()
       .prepare(
         `INSERT INTO service_areas
-           (id, city, state, slug, neighborhoods, note, published, sort_order, updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?)`,
+           (id, city, state, slug, neighborhoods, note, published, sort_order, is_placeholder, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
       )
       .run(
         id,
@@ -462,7 +469,7 @@ export const areasStore = {
     const result = getDb()
       .prepare(
         `UPDATE service_areas SET
-           city=?, state=?, slug=?, neighborhoods=?, note=?, published=?, sort_order=?, updated_at=?
+           city=?, state=?, slug=?, neighborhoods=?, note=?, published=?, sort_order=?, is_placeholder=?, updated_at=?
          WHERE id=?`,
       )
       .run(

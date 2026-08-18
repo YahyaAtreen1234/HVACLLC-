@@ -17,7 +17,7 @@ import { env } from "./env";
  * server's hot reload does not open a new handle on every edit.
  */
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 interface DbGlobal {
   __leadsDb?: DatabaseSync;
@@ -141,6 +141,24 @@ function migrate(db: DatabaseSync): void {
       CREATE INDEX IF NOT EXISTS idx_faqs_topic     ON faqs (topic, sort_order);
       CREATE INDEX IF NOT EXISTS idx_areas_sort     ON service_areas (sort_order);
     `);
+  }
+
+  // Migration 3 — mark which service areas are confirmed coverage.
+  //
+  // Previously this was inferred by matching the seeded placeholder city
+  // names, which silently stopped working the moment those names were edited:
+  // every city then looked confirmed, so unserved towns went into the sitemap
+  // and were indexed. Storing the flag makes it explicit and editable.
+  if (current < 3) {
+    const columns = db
+      .prepare("PRAGMA table_info(service_areas)")
+      .all() as Array<{ name: string }>;
+
+    if (!columns.some((column) => column.name === "is_placeholder")) {
+      db.exec(
+        "ALTER TABLE service_areas ADD COLUMN is_placeholder INTEGER NOT NULL DEFAULT 0",
+      );
+    }
   }
 
   db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);

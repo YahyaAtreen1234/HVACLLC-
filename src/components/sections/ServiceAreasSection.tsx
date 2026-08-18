@@ -31,20 +31,26 @@ export function ServiceAreasSection({
 
         {getServiceAreasArePlaceholder() ? (
           <Alert tone="info" title="Placeholder service areas" className="mt-8">
-            These city names are stand-ins. Replace them in{" "}
-            <code>src/data/service-areas.ts</code> with the towns the business
-            actually covers — this list also feeds the structured data search
-            engines use for local results.
+            Some of these city names are stand-ins. Edit them at{" "}
+            <code>/admin/areas</code> so they match the towns the office
+            actually dispatches to — this list feeds each city page and the
+            structured data search engines use for local results. Stand-in
+            cities are set to noindex until you confirm them.
           </Alert>
         ) : null}
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {getServiceAreas().map((area) => (
             <li key={area.slug} id={area.slug} className="scroll-mt-32">
-              <div className="flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
+              <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
                 <span className="flex items-center gap-2 font-display text-lg font-bold text-ink-950">
                   <Icon name="map-pin" size={18} className="text-flame-500" />
-                  {area.city}
+                  <Link
+                    href={`/service-areas/${area.slug}`}
+                    className="after:absolute after:inset-0 after:content-[''] hover:text-flame-600"
+                  >
+                    {area.city}
+                  </Link>
                   <span className="text-sm font-semibold text-ink-500">
                     {area.state}
                   </span>
@@ -56,13 +62,10 @@ export function ServiceAreasSection({
                   </p>
                 ) : null}
 
-                <Link
-                  href="/contact"
-                  className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-semibold text-flame-600 hover:text-flame-700"
-                >
-                  Book in {area.city}
+                <span className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-semibold text-flame-600">
+                  HVAC service in {area.city}
                   <Icon name="arrow-right" size={15} />
-                </Link>
+                </span>
               </div>
             </li>
           ))}

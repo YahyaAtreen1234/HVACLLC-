@@ -82,6 +82,7 @@ export function seedContentIfEmpty(): void {
       note: "",
       published: true,
       sortOrder: index,
+      isPlaceholder: area.isPlaceholder,
     });
   });
 

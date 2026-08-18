@@ -289,6 +289,7 @@ function areaFromForm(form: FormData): ServiceAreaInput {
     note: text(form, "note"),
     published: checked(form, "published"),
     sortOrder: number(form, "sortOrder"),
+    isPlaceholder: checked(form, "isPlaceholder"),
   };
 }
 

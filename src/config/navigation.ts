@@ -9,12 +9,22 @@ export interface NavItem {
   description?: string;
 }
 
+/**
+ * The header bar. Kept deliberately short — a seven-item nav is already at the
+ * limit of what someone scans on a phone while their AC is broken. Secondary
+ * pages live in the footer instead of stretching this list.
+ */
 export const mainNav: NavItem[] = [
   { label: "Home", href: "/", description: "Back to the start" },
   {
     label: "Services",
     href: "/services",
     description: "Repair, replacement and maintenance",
+  },
+  {
+    label: "Maintenance",
+    href: "/maintenance-plans",
+    description: "Plans that keep systems from failing",
   },
   { label: "About", href: "/about", description: "Who you are calling" },
   {
@@ -23,12 +33,19 @@ export const mainNav: NavItem[] = [
     description: "Where we work",
   },
   { label: "Reviews", href: "/reviews", description: "What customers say" },
-  {
-    label: "Financing",
-    href: "/financing",
-    description: "Ways to pay for a new system",
-  },
   { label: "Contact", href: "/contact", description: "Reach the office" },
+];
+
+/**
+ * Footer-only pages. Real pages that most visitors do not need in the header:
+ * they matter for SEO and for the minority who go looking.
+ */
+export const companyNav: NavItem[] = [
+  { label: "Maintenance Plans", href: "/maintenance-plans" },
+  { label: "Financing", href: "/financing" },
+  { label: "FAQs", href: "/faqs" },
+  { label: "Reviews", href: "/reviews" },
+  { label: "Careers", href: "/careers" },
 ];
 
 export const legalNav: NavItem[] = [

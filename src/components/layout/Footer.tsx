@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { Logo } from "./Logo";
 import { business } from "@/config/business";
-import { legalNav, mainNav } from "@/config/navigation";
+import { legalNav, companyNav } from "@/config/navigation";
 import { getServices, getServiceAreas } from "@/server/content/read";
 import { getHoursRows } from "@/lib/hours";
 import { phoneDisplay, telHref } from "@/lib/phone";
@@ -61,7 +61,7 @@ export function Footer() {
               {getServiceAreas().map((area) => (
                 <li key={area.slug}>
                   <Link
-                    href={`/service-areas#${area.slug}`}
+                    href={`/service-areas/${area.slug}`}
                     className="transition-colors hover:text-white"
                   >
                     {area.city}, {area.state}
@@ -74,15 +74,13 @@ export function Footer() {
               Company
             </h2>
             <ul className="mt-5 space-y-2.5 text-sm">
-              {mainNav
-                .filter((item) => !["/", "/services", "/service-areas"].includes(item.href))
-                .map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href} className="transition-colors hover:text-white">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+              {[{ label: "About", href: "/about" }, ...companyNav].map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="transition-colors hover:text-white">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
 
