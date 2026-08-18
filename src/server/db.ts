@@ -186,3 +186,15 @@ export function getDb(): DatabaseSync {
   globalRef.__leadsDb = db;
   return db;
 }
+
+/**
+ * Closes the connection and drops the cached handle.
+ *
+ * Only tests need this. SQLite holds an open file handle, and on Windows an
+ * open handle blocks deleting the directory containing it — so a test using a
+ * throwaway database cannot clean up after itself without closing first.
+ */
+export function closeDb(): void {
+  globalRef.__leadsDb?.close();
+  globalRef.__leadsDb = undefined;
+}

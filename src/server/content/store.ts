@@ -460,6 +460,7 @@ export const areasStore = {
         input.note,
         input.published ? 1 : 0,
         input.sortOrder,
+        input.isPlaceholder ? 1 : 0,
         now(),
       );
     return { id, ...input };
@@ -480,6 +481,7 @@ export const areasStore = {
         input.note,
         input.published ? 1 : 0,
         input.sortOrder,
+        input.isPlaceholder ? 1 : 0,
         now(),
         id,
       );
