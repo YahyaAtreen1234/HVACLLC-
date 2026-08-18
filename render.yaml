@@ -13,10 +13,11 @@ services:
     region: oregon
     healthCheckPath: /api/health
 
-    # The disk everything durable lives on. Without it, every deploy would
-    # start from an empty database and wipe the customer enquiries.
+    # Leads and editable content live in Postgres now, but uploaded photos are
+    # still files, so this disk is still required. Without it, every deploy
+    # would delete the photos.
     disk:
-      name: hvac-data
+      name: hvac-uploads
       mountPath: /data
       sizeGB: 1
 
@@ -27,9 +28,14 @@ services:
       - key: NEXT_PUBLIC_SITE_URL
         sync: false
 
-      # Must match the disk mount above.
-      - key: LEADS_DB_PATH
-        value: /data/leads.db
+      # Wired automatically from the database defined at the bottom of this
+      # file — no connection string to copy by hand.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hvac-db
+          property: connectionString
+
+      # Photos are still written to disk, so the mount above is still needed.
       - key: UPLOADS_PATH
         value: /data/uploads
 
@@ -64,3 +70,9 @@ services:
         sync: false
       - key: SERVICE_REQUEST_WEBHOOK_URL
         sync: false
+
+databases:
+  - name: hvac-db
+    databaseName: hvac
+    user: hvac
+    plan: basic-256mb

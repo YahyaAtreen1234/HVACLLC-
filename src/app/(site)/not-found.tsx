@@ -4,8 +4,17 @@ import { Icon } from "@/components/ui/Icon";
 import { CtaPair } from "@/components/cta/CtaButtons";
 import { getServices } from "@/server/content/read";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 /** 404 page. Routes the visitor somewhere useful instead of dead-ending. */
-export default function NotFound() {
+export default async function NotFound() {
   return (
     <Container size="narrow">
       <div className="py-24 sm:py-32">
@@ -24,7 +33,7 @@ export default function NotFound() {
           Popular services
         </h2>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-          {getServices().slice(0, 6).map((service) => (
+          {(await getServices()).slice(0, 6).map((service) => (
             <li key={service.slug}>
               <Link
                 href={`/services/${service.slug}`}

@@ -5,9 +5,9 @@ import { Badge, EmptyState, PageHeader, TableWrap, tableClasses as t } from "../
 
 export const dynamic = "force-dynamic";
 
-export default function TeamAdminPage() {
-  seedContentIfEmpty();
-  const members = teamStore.all(true);
+export default async function TeamAdminPage() {
+  await seedContentIfEmpty();
+  const members = await teamStore.all(true);
   const placeholders = members.filter((m) => /^add /i.test(m.name)).length;
 
   return (

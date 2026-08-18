@@ -3,6 +3,15 @@ import { Footer } from "@/components/layout/Footer";
 import { getServiceAreas } from "@/server/content/read";
 import NotFoundContent from "./(site)/not-found";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 /**
  * Global 404, for URLs that match no route group at all.
  *
@@ -11,8 +20,8 @@ import NotFoundContent from "./(site)/not-found";
  * to bring the header and footer itself — a 404 with no way to navigate out is
  * a dead end.
  */
-export default function GlobalNotFound() {
-  const areaSummary = getServiceAreas()
+export default async function GlobalNotFound() {
+  const areaSummary = (await getServiceAreas())
     .slice(0, 3)
     .map((area) => area.city)
     .join(", ");

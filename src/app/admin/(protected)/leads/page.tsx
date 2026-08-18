@@ -1,4 +1,4 @@
-import { sqliteLeadStore } from "@/server/leads/store";
+import { postgresLeadStore } from "@/server/leads/store";
 import { LEAD_STATUSES, isLeadStatus } from "@/server/leads/types";
 import { updateLeadStatus } from "../../actions";
 import { Badge, EmptyState, PageHeader, TableWrap, tableClasses as t } from "../../ui";
@@ -20,8 +20,8 @@ export default async function LeadsPage({
   const { status } = await searchParams;
   const filter = isLeadStatus(status) ? status : undefined;
 
-  const leads = sqliteLeadStore.list({ status: filter, limit: 200 });
-  const counts = sqliteLeadStore.countByStatus();
+  const leads = await postgresLeadStore.list({ status: filter, limit: 200 });
+  const counts = await postgresLeadStore.countByStatus();
 
   return (
     <>

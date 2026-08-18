@@ -215,20 +215,25 @@ do not put this shared token in a cookie.
 
 ### Database
 
-SQLite through Node's built-in `node:sqlite` — no native module to compile, no
-service to provision, no dependency to audit. Comfortably handles a
-contractor's lead volume.
+PostgreSQL, via `pg`. Set `DATABASE_URL` and the schema creates itself on first
+connection — there is no migration command to remember.
 
-**This host must give you a real disk. Vercel, Netlify functions and other
-serverless platforms will not work** — their filesystem is read-only apart
-from a `/tmp` that is wiped between requests. Deployed there, the marketing
-pages still render (they are prerendered at build), but every contact form
-submission returns 503 and the admin panel cannot save anything. See
-[Deploying](#deploying).
+Because it is a network service rather than a file, the same code runs on a
+container host and on serverless. Any provider works: Neon, Supabase, Render,
+Railway, or your own server.
 
-If you ever do need serverless, implement the `LeadStore` interface against
-Postgres; it is the only thing the rest of the backend knows about, so nothing
-else changes. Uploads would need object storage at the same time.
+Two things follow from content living in a database the owner edits at runtime:
+
+- **Public pages render per request** rather than at build time. Otherwise an
+  edit made in the admin panel would show correctly and then silently revert to
+  the deploy-time copy on the next deploy.
+- **The build does not need the database.** Nothing is pre-rendered from it, so
+  a deploy cannot fail because the database was briefly unreachable.
+
+⚠️ **Uploaded photos are still files, not database rows.** They need a mounted
+disk, and they do *not* work on serverless hosting, where the filesystem is
+read-only. Everything else does. Moving uploads to object storage (S3, R2,
+Vercel Blob) is what would close that last gap.
 
 ### Privacy
 
@@ -240,18 +245,24 @@ Raw IP addresses are never stored. They are salted and hashed
 
 ## Deploying
 
-The site keeps leads, editable content and uploaded photos on disk, so it
-needs a host that provides one. That rules out serverless platforms and makes
-this a container deployment.
+Leads and editable content live in PostgreSQL, so the only hard requirement is
+a database. Uploaded photos are still files and need a mounted disk, which is
+the one thing serverless hosting cannot provide.
 
-Everything durable lives under a single mount point, `/data`. Two variables
-point at it, and **if either points outside the mounted disk, that data is
-destroyed on the next deploy**:
+| Host | Site, form, admin panel | Photo uploads |
+| --- | --- | --- |
+| Render, Railway, Fly.io, VPS | ✅ | ✅ with a disk at `/data` |
+| Vercel, Netlify | ✅ | ❌ read-only filesystem |
+
+Two variables matter:
 
 ```
-LEADS_DB_PATH=/data/leads.db
+DATABASE_URL=postgres://user:password@host:5432/database
 UPLOADS_PATH=/data/uploads
 ```
+
+On serverless use the provider's **pooled** connection string — each instance
+opens its own connections, and the direct one runs out.
 
 ### Before the first deploy
 
@@ -268,8 +279,9 @@ the host in the next step.
 ### Render
 
 1. Push this repo to GitHub, then choose **New → Blueprint** on Render and
-   point it at the repo. It reads `render.yaml` and provisions the service,
-   the 1 GB disk at `/data`, and the generated secrets.
+   point it at the repo. It reads `render.yaml` and provisions the service, a
+   PostgreSQL database wired to `DATABASE_URL` automatically, the 1 GB disk at
+   `/data` for photos, and the generated secrets.
 2. Fill in the values marked `sync: false`: `NEXT_PUBLIC_SITE_URL` (your real
    domain, e.g. `https://www.yourcompany.com`), the two admin credentials, and
    at least one notification channel.
@@ -300,10 +312,22 @@ starts, so it is a **build argument**. Changing it later requires a rebuild,
 not just a restart. Get it right before the first deploy or your canonical
 URLs and structured data will point at the wrong domain.
 
+### Vercel
+
+Works, with one exception: photo uploads need a filesystem Vercel does not
+provide. Set `DATABASE_URL` (pooled), `NEXT_PUBLIC_SITE_URL`, the two admin
+credentials and `ADMIN_SESSION_SECRET`.
+
+`ADMIN_SESSION_SECRET` matters more here than elsewhere. Without it the code
+falls back to a per-process random secret, and since serverless runs many
+processes, a cookie signed by one instance is rejected by the next — you would
+log in and be bounced straight back to the login page.
+
 ### Backups
 
-The entire site state is one directory. Copy `/data` on a schedule — that is
-your customer enquiries and every photo you have uploaded.
+Back up the database — that is your customer enquiries and all site content.
+Managed providers do this for you; check that yours is set up and that you know
+how to restore it. If you use a disk for photos, back that up too.
 
 ---
 

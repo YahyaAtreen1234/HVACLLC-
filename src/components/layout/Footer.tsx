@@ -9,7 +9,7 @@ import { getHoursRows } from "@/lib/hours";
 import { phoneDisplay, telHref } from "@/lib/phone";
 import { SocialLinks } from "@/components/SocialLinks";
 
-export function Footer() {
+export async function Footer() {
   const hours = getHoursRows();
 
   const addressLine = [
@@ -39,7 +39,7 @@ export function Footer() {
               Services
             </h2>
             <ul className="mt-5 space-y-2.5 text-sm">
-              {getServices().map((service) => (
+              {(await getServices()).map((service) => (
                 <li key={service.slug}>
                   <Link
                     href={`/services/${service.slug}`}
@@ -58,7 +58,7 @@ export function Footer() {
               Service Areas
             </h2>
             <ul className="mt-5 space-y-2.5 text-sm">
-              {getServiceAreas().map((area) => (
+              {(await getServiceAreas()).map((area) => (
                 <li key={area.slug}>
                   <Link
                     href={`/service-areas/${area.slug}`}

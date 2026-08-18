@@ -26,11 +26,34 @@ const SEED_FLAG = "content.seeded";
 
 const featuredSlugs = new Set(featuredServices.map((service) => service.slug));
 
-export function seedContentIfEmpty(): void {
-  if (settingsStore.has(SEED_FLAG)) return;
+/**
+ * In-process guard.
+ *
+ * The database flag stops a second *deployment* from re-seeding, but not a
+ * second concurrent *request* in the same process: several pages can call this
+ * at once during the first render, all read an unset flag, and all start
+ * inserting. Caching the promise makes them share one run.
+ */
+let seeding: Promise<void> | null = null;
 
-  seedServices.forEach((service, index) => {
-    servicesStore.create({
+export function seedContentIfEmpty(): Promise<void> {
+  seeding ??= runSeed().catch((error: unknown) => {
+    // Clear the cache so a transient database error at boot does not leave the
+    // process permanently convinced it has seeded.
+    seeding = null;
+    throw error;
+  });
+  return seeding;
+}
+
+async function runSeed(): Promise<void> {
+  if (await settingsStore.has(SEED_FLAG)) return;
+
+  // Sequential rather than Promise.all: sortOrder is the array index, and the
+  // pool holds only a handful of connections. Concurrency here would buy
+  // nothing on a one-off boot task and risks starving the request handling it.
+  for (const [index, service] of seedServices.entries()) {
+    await servicesStore.create({
       slug: service.slug,
       name: service.name,
       shortName: service.name,
@@ -48,10 +71,10 @@ export function seedContentIfEmpty(): void {
       published: true,
       sortOrder: index,
     });
-  });
+  }
 
-  seedTeam.forEach((member, index) => {
-    teamStore.create({
+  for (const [index, member] of seedTeam.entries()) {
+    await teamStore.create({
       name: member.name,
       role: member.role,
       bio: member.bio,
@@ -61,20 +84,20 @@ export function seedContentIfEmpty(): void {
       published: true,
       sortOrder: index,
     });
-  });
+  }
 
-  seedFaqs.forEach((faq, index) => {
-    faqsStore.create({
+  for (const [index, faq] of seedFaqs.entries()) {
+    await faqsStore.create({
       question: faq.question,
       answer: faq.answer,
       topic: faq.topic ?? "general",
       published: true,
       sortOrder: index,
     });
-  });
+  }
 
-  seedAreas.forEach((area, index) => {
-    areasStore.create({
+  for (const [index, area] of seedAreas.entries()) {
+    await areasStore.create({
       city: area.city,
       state: area.state,
       slug: area.slug,
@@ -84,7 +107,7 @@ export function seedContentIfEmpty(): void {
       sortOrder: index,
       isPlaceholder: area.isPlaceholder,
     });
-  });
+  }
 
-  settingsStore.set(SEED_FLAG, { at: new Date().toISOString() });
+  await settingsStore.set(SEED_FLAG, { at: new Date().toISOString() });
 }

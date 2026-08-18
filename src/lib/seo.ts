@@ -61,7 +61,7 @@ const postalAddress = {
  * certifications are fabricated, and `aggregateRating` is deliberately absent
  * until there are real reviews to aggregate.
  */
-export function localBusinessSchema() {
+export async function localBusinessSchema() {
   const sameAs = Object.values(business.social).filter(Boolean);
 
   return {
@@ -76,7 +76,7 @@ export function localBusinessSchema() {
     email: business.email,
     address: postalAddress,
     openingHoursSpecification: getSchemaOpeningHours(),
-    areaServed: getServiceAreas().map((area) => ({
+    areaServed: (await getServiceAreas()).map((area) => ({
       "@type": "City",
       name: `${area.city}, ${area.state}`,
     })),
@@ -84,7 +84,7 @@ export function localBusinessSchema() {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "HVAC Services",
-      itemListElement: getServices().map((service) => ({
+      itemListElement: (await getServices()).map((service) => ({
         "@type": "Offer",
         itemOffered: { "@type": "Service", name: service.name },
       })),
@@ -117,7 +117,7 @@ export function faqSchema(faqs: Array<{ question: string; answer: string }>) {
   };
 }
 
-export function serviceSchema(input: {
+export async function serviceSchema(input: {
   name: string;
   description: string;
   path: string;
@@ -130,7 +130,7 @@ export function serviceSchema(input: {
     serviceType: input.name,
     url: `${site.url}${input.path}`,
     provider: { "@id": `${site.url}/#business` },
-    areaServed: getServiceAreas().map((area) => ({
+    areaServed: (await getServiceAreas()).map((area) => ({
       "@type": "City",
       name: `${area.city}, ${area.state}`,
     })),

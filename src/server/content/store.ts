@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { getDb } from "../db";
+import { count as countRows, execute, query, queryOne } from "../db";
 import type { IconName } from "@/types";
 
 /**
@@ -9,8 +9,9 @@ import type { IconName } from "@/types";
  * services, team, FAQs, service areas, and business settings. Everything the
  * public pages render comes through here.
  *
- * All reads are synchronous (SQLite is in-process, so there is nothing to
- * await) and cheap enough to call directly from a server component.
+ * Every method is async: Postgres is a network service, unlike the in-process
+ * SQLite this replaced. Callers are server components and route handlers, both
+ * of which can await, so the change is confined to adding `await`.
  */
 
 type Row = Record<string, unknown>;
@@ -21,9 +22,24 @@ const str = (row: Row, key: string): string =>
 const num = (row: Row, key: string): number =>
   typeof row[key] === "number" ? (row[key] as number) : Number(row[key] ?? 0);
 
-const bool = (row: Row, key: string): boolean => num(row, key) === 1;
+/**
+ * Postgres BOOLEAN comes back as a real boolean. The numeric branch is kept so
+ * a column read through a driver that returns 0/1 still behaves.
+ */
+const bool = (row: Row, key: string): boolean => {
+  const value = row[key];
+  if (typeof value === "boolean") return value;
+  return num(row, key) === 1;
+};
 
+/**
+ * JSONB is decoded by the driver, so the value normally arrives as an array
+ * already. The string branch covers a column that still holds encoded JSON.
+ */
 function jsonArray(row: Row, key: string): string[] {
+  const value = row[key];
+  if (Array.isArray(value)) return value.map(String);
+
   try {
     const parsed: unknown = JSON.parse(str(row, key) || "[]");
     return Array.isArray(parsed) ? parsed.map(String) : [];
@@ -31,6 +47,9 @@ function jsonArray(row: Row, key: string): string[] {
     return [];
   }
 }
+
+/** Arrays are handed to Postgres as JSON text and cast into the jsonb column. */
+const json = (value: unknown): string => JSON.stringify(value);
 
 const now = () => new Date().toISOString();
 
@@ -83,39 +102,32 @@ function toService(row: Row): DbService {
 }
 
 export const servicesStore = {
-  all(includeUnpublished = false): DbService[] {
+  async all(includeUnpublished = false): Promise<DbService[]> {
     const sql = includeUnpublished
       ? "SELECT * FROM services ORDER BY sort_order, name"
-      : "SELECT * FROM services WHERE published = 1 ORDER BY sort_order, name";
-    const rows: Row[] = getDb().prepare(sql).all();
-    return rows.map(toService);
+      : "SELECT * FROM services WHERE published = TRUE ORDER BY sort_order, name";
+    return (await query(sql)).map(toService);
   },
 
-  bySlug(slug: string): DbService | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM services WHERE slug = ?")
-      .get(slug);
+  async bySlug(slug: string): Promise<DbService | null> {
+    const row = await queryOne("SELECT * FROM services WHERE slug = $1", [slug]);
     return row ? toService(row) : null;
   },
 
-  byId(id: string): DbService | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM services WHERE id = ?")
-      .get(id);
+  async byId(id: string): Promise<DbService | null> {
+    const row = await queryOne("SELECT * FROM services WHERE id = $1", [id]);
     return row ? toService(row) : null;
   },
 
-  create(input: ServiceInput): DbService {
+  async create(input: ServiceInput): Promise<DbService> {
     const id = randomUUID();
-    getDb()
-      .prepare(
-        `INSERT INTO services (
-           id, slug, name, short_name, summary, description, icon, category,
-           body, includes, signs, related, image_src, image_alt,
-           featured, published, sort_order, updated_at
-         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      )
-      .run(
+    await execute(
+      `INSERT INTO services (
+         id, slug, name, short_name, summary, description, icon, category,
+         body, includes, signs, related, image_src, image_alt,
+         featured, published, sort_order, updated_at
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+      [
         id,
         input.slug,
         input.name,
@@ -124,30 +136,29 @@ export const servicesStore = {
         input.description,
         input.icon,
         input.category,
-        JSON.stringify(input.body),
-        JSON.stringify(input.includes),
-        JSON.stringify(input.signs),
-        JSON.stringify(input.related),
+        json(input.body),
+        json(input.includes),
+        json(input.signs),
+        json(input.related),
         input.imageSrc,
         input.imageAlt,
-        input.featured ? 1 : 0,
-        input.published ? 1 : 0,
+        input.featured,
+        input.published,
         input.sortOrder,
         now(),
-      );
+      ],
+    );
     return { id, ...input };
   },
 
-  update(id: string, input: ServiceInput): DbService | null {
-    const result = getDb()
-      .prepare(
-        `UPDATE services SET
-           slug=?, name=?, short_name=?, summary=?, description=?, icon=?,
-           category=?, body=?, includes=?, signs=?, related=?, image_src=?,
-           image_alt=?, featured=?, published=?, sort_order=?, updated_at=?
-         WHERE id=?`,
-      )
-      .run(
+  async update(id: string, input: ServiceInput): Promise<DbService | null> {
+    const changed = await execute(
+      `UPDATE services SET
+         slug=$1, name=$2, short_name=$3, summary=$4, description=$5, icon=$6,
+         category=$7, body=$8, includes=$9, signs=$10, related=$11, image_src=$12,
+         image_alt=$13, featured=$14, published=$15, sort_order=$16, updated_at=$17
+       WHERE id=$18`,
+      [
         input.slug,
         input.name,
         input.shortName,
@@ -155,30 +166,28 @@ export const servicesStore = {
         input.description,
         input.icon,
         input.category,
-        JSON.stringify(input.body),
-        JSON.stringify(input.includes),
-        JSON.stringify(input.signs),
-        JSON.stringify(input.related),
+        json(input.body),
+        json(input.includes),
+        json(input.signs),
+        json(input.related),
         input.imageSrc,
         input.imageAlt,
-        input.featured ? 1 : 0,
-        input.published ? 1 : 0,
+        input.featured,
+        input.published,
         input.sortOrder,
         now(),
         id,
-      );
-    return result.changes ? { id, ...input } : null;
+      ],
+    );
+    return changed ? { id, ...input } : null;
   },
 
-  remove(id: string): boolean {
-    return getDb().prepare("DELETE FROM services WHERE id = ?").run(id).changes > 0;
+  async remove(id: string): Promise<boolean> {
+    return (await execute("DELETE FROM services WHERE id = $1", [id])) > 0;
   },
 
-  count(): number {
-    const row = getDb().prepare("SELECT COUNT(*) AS n FROM services").get() as {
-      n: number;
-    };
-    return row.n;
+  count(): Promise<number> {
+    return countRows("SELECT COUNT(*) AS n FROM services");
   },
 };
 
@@ -215,78 +224,71 @@ function toTeamMember(row: Row): DbTeamMember {
 }
 
 export const teamStore = {
-  all(includeUnpublished = false): DbTeamMember[] {
+  async all(includeUnpublished = false): Promise<DbTeamMember[]> {
     const sql = includeUnpublished
       ? "SELECT * FROM team_members ORDER BY sort_order, name"
-      : "SELECT * FROM team_members WHERE published = 1 ORDER BY sort_order, name";
-    const rows: Row[] = getDb().prepare(sql).all();
-    return rows.map(toTeamMember);
+      : "SELECT * FROM team_members WHERE published = TRUE ORDER BY sort_order, name";
+    return (await query(sql)).map(toTeamMember);
   },
 
-  byId(id: string): DbTeamMember | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM team_members WHERE id = ?")
-      .get(id);
+  async byId(id: string): Promise<DbTeamMember | null> {
+    const row = await queryOne("SELECT * FROM team_members WHERE id = $1", [id]);
     return row ? toTeamMember(row) : null;
   },
 
-  create(input: TeamMemberInput): DbTeamMember {
+  async create(input: TeamMemberInput): Promise<DbTeamMember> {
     const id = randomUUID();
-    getDb()
-      .prepare(
-        `INSERT INTO team_members
-           (id, name, role, bio, credentials, image_src, image_alt, published, sort_order, updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      )
-      .run(
+    await execute(
+      `INSERT INTO team_members
+         (id, name, role, bio, credentials, image_src, image_alt, published, sort_order, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
         id,
         input.name,
         input.role,
         input.bio,
-        JSON.stringify(input.credentials),
+        json(input.credentials),
         input.imageSrc,
         input.imageAlt,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
         now(),
-      );
+      ],
+    );
     return { id, ...input };
   },
 
-  update(id: string, input: TeamMemberInput): DbTeamMember | null {
-    const result = getDb()
-      .prepare(
-        `UPDATE team_members SET
-           name=?, role=?, bio=?, credentials=?, image_src=?, image_alt=?,
-           published=?, sort_order=?, updated_at=?
-         WHERE id=?`,
-      )
-      .run(
+  async update(
+    id: string,
+    input: TeamMemberInput,
+  ): Promise<DbTeamMember | null> {
+    const changed = await execute(
+      `UPDATE team_members SET
+         name=$1, role=$2, bio=$3, credentials=$4, image_src=$5, image_alt=$6,
+         published=$7, sort_order=$8, updated_at=$9
+       WHERE id=$10`,
+      [
         input.name,
         input.role,
         input.bio,
-        JSON.stringify(input.credentials),
+        json(input.credentials),
         input.imageSrc,
         input.imageAlt,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
         now(),
         id,
-      );
-    return result.changes ? { id, ...input } : null;
-  },
-
-  remove(id: string): boolean {
-    return (
-      getDb().prepare("DELETE FROM team_members WHERE id = ?").run(id).changes > 0
+      ],
     );
+    return changed ? { id, ...input } : null;
   },
 
-  count(): number {
-    const row = getDb()
-      .prepare("SELECT COUNT(*) AS n FROM team_members")
-      .get() as { n: number };
-    return row.n;
+  async remove(id: string): Promise<boolean> {
+    return (await execute("DELETE FROM team_members WHERE id = $1", [id])) > 0;
+  },
+
+  count(): Promise<number> {
+    return countRows("SELECT COUNT(*) AS n FROM team_members");
   },
 };
 
@@ -317,76 +319,67 @@ function toFaq(row: Row): DbFaq {
 }
 
 export const faqsStore = {
-  all(includeUnpublished = false): DbFaq[] {
+  async all(includeUnpublished = false): Promise<DbFaq[]> {
     const sql = includeUnpublished
       ? "SELECT * FROM faqs ORDER BY sort_order, question"
-      : "SELECT * FROM faqs WHERE published = 1 ORDER BY sort_order, question";
-    const rows: Row[] = getDb().prepare(sql).all();
+      : "SELECT * FROM faqs WHERE published = TRUE ORDER BY sort_order, question";
+    return (await query(sql)).map(toFaq);
+  },
+
+  async byTopic(topic: string): Promise<DbFaq[]> {
+    const rows = await query(
+      "SELECT * FROM faqs WHERE published = TRUE AND topic = $1 ORDER BY sort_order, question",
+      [topic],
+    );
     return rows.map(toFaq);
   },
 
-  byTopic(topic: string): DbFaq[] {
-    const rows: Row[] = getDb()
-      .prepare(
-        "SELECT * FROM faqs WHERE published = 1 AND topic = ? ORDER BY sort_order, question",
-      )
-      .all(topic);
-    return rows.map(toFaq);
-  },
-
-  byId(id: string): DbFaq | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM faqs WHERE id = ?")
-      .get(id);
+  async byId(id: string): Promise<DbFaq | null> {
+    const row = await queryOne("SELECT * FROM faqs WHERE id = $1", [id]);
     return row ? toFaq(row) : null;
   },
 
-  create(input: FaqInput): DbFaq {
+  async create(input: FaqInput): Promise<DbFaq> {
     const id = randomUUID();
-    getDb()
-      .prepare(
-        `INSERT INTO faqs (id, question, answer, topic, published, sort_order, updated_at)
-         VALUES (?,?,?,?,?,?,?)`,
-      )
-      .run(
+    await execute(
+      `INSERT INTO faqs (id, question, answer, topic, published, sort_order, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [
         id,
         input.question,
         input.answer,
         input.topic,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
         now(),
-      );
+      ],
+    );
     return { id, ...input };
   },
 
-  update(id: string, input: FaqInput): DbFaq | null {
-    const result = getDb()
-      .prepare(
-        `UPDATE faqs SET question=?, answer=?, topic=?, published=?, sort_order=?, updated_at=?
-         WHERE id=?`,
-      )
-      .run(
+  async update(id: string, input: FaqInput): Promise<DbFaq | null> {
+    const changed = await execute(
+      `UPDATE faqs SET question=$1, answer=$2, topic=$3, published=$4, sort_order=$5, updated_at=$6
+       WHERE id=$7`,
+      [
         input.question,
         input.answer,
         input.topic,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
         now(),
         id,
-      );
-    return result.changes ? { id, ...input } : null;
+      ],
+    );
+    return changed ? { id, ...input } : null;
   },
 
-  remove(id: string): boolean {
-    return getDb().prepare("DELETE FROM faqs WHERE id = ?").run(id).changes > 0;
+  async remove(id: string): Promise<boolean> {
+    return (await execute("DELETE FROM faqs WHERE id = $1", [id])) > 0;
   },
 
-  count(): number {
-    const row = getDb().prepare("SELECT COUNT(*) AS n FROM faqs").get() as {
-      n: number;
-    };
-    return row.n;
+  count(): Promise<number> {
+    return countRows("SELECT COUNT(*) AS n FROM faqs");
   },
 };
 
@@ -428,77 +421,71 @@ function toArea(row: Row): DbServiceArea {
 }
 
 export const areasStore = {
-  all(includeUnpublished = false): DbServiceArea[] {
+  async all(includeUnpublished = false): Promise<DbServiceArea[]> {
     const sql = includeUnpublished
       ? "SELECT * FROM service_areas ORDER BY sort_order, city"
-      : "SELECT * FROM service_areas WHERE published = 1 ORDER BY sort_order, city";
-    const rows: Row[] = getDb().prepare(sql).all();
-    return rows.map(toArea);
+      : "SELECT * FROM service_areas WHERE published = TRUE ORDER BY sort_order, city";
+    return (await query(sql)).map(toArea);
   },
 
-  byId(id: string): DbServiceArea | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM service_areas WHERE id = ?")
-      .get(id);
+  async byId(id: string): Promise<DbServiceArea | null> {
+    const row = await queryOne("SELECT * FROM service_areas WHERE id = $1", [id]);
     return row ? toArea(row) : null;
   },
 
-  create(input: ServiceAreaInput): DbServiceArea {
+  async create(input: ServiceAreaInput): Promise<DbServiceArea> {
     const id = randomUUID();
-    getDb()
-      .prepare(
-        `INSERT INTO service_areas
-           (id, city, state, slug, neighborhoods, note, published, sort_order, is_placeholder, updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      )
-      .run(
+    await execute(
+      `INSERT INTO service_areas
+         (id, city, state, slug, neighborhoods, note, published, sort_order, is_placeholder, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
         id,
         input.city,
         input.state,
         input.slug,
-        JSON.stringify(input.neighborhoods),
+        json(input.neighborhoods),
         input.note,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
-        input.isPlaceholder ? 1 : 0,
+        input.isPlaceholder,
         now(),
-      );
+      ],
+    );
     return { id, ...input };
   },
 
-  update(id: string, input: ServiceAreaInput): DbServiceArea | null {
-    const result = getDb()
-      .prepare(
-        `UPDATE service_areas SET
-           city=?, state=?, slug=?, neighborhoods=?, note=?, published=?, sort_order=?, is_placeholder=?, updated_at=?
-         WHERE id=?`,
-      )
-      .run(
+  async update(
+    id: string,
+    input: ServiceAreaInput,
+  ): Promise<DbServiceArea | null> {
+    const changed = await execute(
+      `UPDATE service_areas SET
+         city=$1, state=$2, slug=$3, neighborhoods=$4, note=$5, published=$6,
+         sort_order=$7, is_placeholder=$8, updated_at=$9
+       WHERE id=$10`,
+      [
         input.city,
         input.state,
         input.slug,
-        JSON.stringify(input.neighborhoods),
+        json(input.neighborhoods),
         input.note,
-        input.published ? 1 : 0,
+        input.published,
         input.sortOrder,
-        input.isPlaceholder ? 1 : 0,
+        input.isPlaceholder,
         now(),
         id,
-      );
-    return result.changes ? { id, ...input } : null;
-  },
-
-  remove(id: string): boolean {
-    return (
-      getDb().prepare("DELETE FROM service_areas WHERE id = ?").run(id).changes > 0
+      ],
     );
+    return changed ? { id, ...input } : null;
   },
 
-  count(): number {
-    const row = getDb()
-      .prepare("SELECT COUNT(*) AS n FROM service_areas")
-      .get() as { n: number };
-    return row.n;
+  async remove(id: string): Promise<boolean> {
+    return (await execute("DELETE FROM service_areas WHERE id = $1", [id])) > 0;
+  },
+
+  count(): Promise<number> {
+    return countRows("SELECT COUNT(*) AS n FROM service_areas");
   },
 };
 
@@ -507,31 +494,37 @@ export const areasStore = {
 // ---------------------------------------------------------------------------
 
 export const settingsStore = {
-  get<T>(key: string): T | null {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT value FROM settings WHERE key = ?")
-      .get(key);
+  async get<T>(key: string): Promise<T | null> {
+    const row = await queryOne<{ value: unknown }>(
+      "SELECT value FROM settings WHERE key = $1",
+      [key],
+    );
     if (!row) return null;
-    try {
-      return JSON.parse(str(row, "value")) as T;
-    } catch {
-      return null;
+
+    // jsonb arrives decoded; the string branch covers a plain-text column.
+    if (typeof row.value === "string") {
+      try {
+        return JSON.parse(row.value) as T;
+      } catch {
+        return null;
+      }
     }
+    return (row.value ?? null) as T | null;
   },
 
-  set(key: string, value: unknown): void {
-    getDb()
-      .prepare(
-        `INSERT INTO settings (key, value, updated_at) VALUES (?,?,?)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-      )
-      .run(key, JSON.stringify(value), now());
+  async set(key: string, value: unknown): Promise<void> {
+    await execute(
+      `INSERT INTO settings (key, value, updated_at) VALUES ($1,$2,$3)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at`,
+      [key, json(value), now()],
+    );
   },
 
-  has(key: string): boolean {
-    const row = getDb()
-      .prepare("SELECT COUNT(*) AS n FROM settings WHERE key = ?")
-      .get(key) as { n: number };
-    return row.n > 0;
+  async has(key: string): Promise<boolean> {
+    return (
+      (await countRows("SELECT COUNT(*) AS n FROM settings WHERE key = $1", [
+        key,
+      ])) > 0
+    );
   },
 };

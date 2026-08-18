@@ -17,14 +17,23 @@ import { business } from "@/config/business";
 import { site } from "@/config/site";
 import { cn } from "@/lib/utils";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "Maintenance Plans",
   description: `Annual HVAC maintenance agreements from ${business.name}. Scheduled tune-ups, priority booking and repair discounts. Call ${business.phone.display}.`,
   path: "/maintenance-plans",
 });
 
-export default function MaintenancePlansPage() {
-  const faqs = getFaqsByTopic("maintenance", 5);
+export default async function MaintenancePlansPage() {
+  const faqs = await getFaqsByTopic("maintenance", 5);
 
   return (
     <>

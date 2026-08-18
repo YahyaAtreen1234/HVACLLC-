@@ -11,7 +11,7 @@ export default async function EditAreaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const area = areasStore.byId(id);
+  const area = await areasStore.byId(id);
 
   if (!area) notFound();
 

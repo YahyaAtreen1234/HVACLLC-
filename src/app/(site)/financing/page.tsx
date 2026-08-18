@@ -16,6 +16,15 @@ import { getFaqsByTopic } from "@/server/content/read";
 import { pageMetadata } from "@/lib/seo";
 import { business } from "@/config/business";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "Financing",
   description:
@@ -23,7 +32,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/financing",
 });
 
-export default function FinancingPage() {
+export default async function FinancingPage() {
   return (
     <>
       <PageHero
@@ -121,7 +130,7 @@ export default function FinancingPage() {
         </Container>
       </Section>
 
-      <FaqSection faqs={getFaqsByTopic("billing")} title="Payment questions" />
+      <FaqSection faqs={await getFaqsByTopic("billing")} title="Payment questions" />
       <CtaBand
         title="Get a replacement quote"
         lead="A written quote with the full scope — equipment, labour, disposal and any duct or electrical work."

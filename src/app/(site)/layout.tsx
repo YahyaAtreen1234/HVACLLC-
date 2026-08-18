@@ -14,13 +14,24 @@ import { getServiceAreas } from "@/server/content/read";
  * different audience. Route groups do not appear in the URL, so every page in
  * here keeps the path it always had.
  */
-export default function SiteLayout({
+
+/**
+ * Rendered per request, for the whole public site.
+ *
+ * Every page here reads content the owner edits in the admin panel. Baking
+ * that in at build time would mean an edit shows correctly, then silently
+ * reverts to the deploy-time copy on the next deploy — the database keeps the
+ * change, but the served HTML does not. It also means the build no longer
+ * needs the database to be reachable.
+ */
+export const dynamic = "force-dynamic";
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // Read once here so the client Header does not need database access.
-  const areaSummary = getServiceAreas()
+  const areaSummary = (await getServiceAreas())
     .slice(0, 3)
     .map((area) => area.city)
     .join(", ");
@@ -46,7 +57,7 @@ export default function SiteLayout({
       <Footer />
       <MobileCallBar />
 
-      <JsonLd data={localBusinessSchema()} />
+      <JsonLd data={await localBusinessSchema()} />
     </>
   );
 }

@@ -7,8 +7,23 @@
  */
 
 export const env = {
-  /** Where the SQLite file lives. Relative paths resolve from the project root. */
-  leadsDbPath: process.env.LEADS_DB_PATH ?? ".data/leads.db",
+  /**
+   * PostgreSQL connection string, e.g.
+   * postgres://user:password@host:5432/database
+   *
+   * Required — leads and all editable content live here. Prefer a provider's
+   * *pooled* connection string on serverless, where each instance opens its own
+   * connections.
+   */
+  databaseUrl: process.env.DATABASE_URL ?? "",
+
+  /**
+   * Skips TLS certificate verification for the database connection.
+   *
+   * Only for providers that present a self-signed chain. It leaves the traffic
+   * encrypted but unauthenticated, so it is opt-in rather than the default.
+   */
+  databaseSslNoVerify: process.env.DATABASE_SSL_NO_VERIFY === "1",
 
   /**
    * Where admin-uploaded images are written.
@@ -75,6 +90,12 @@ export function configuredChannels(): string[] {
  */
 export function configurationWarnings(): string[] {
   const warnings: string[] = [];
+
+  if (!env.databaseUrl) {
+    warnings.push(
+      "DATABASE_URL is not set — the site cannot store leads or serve editable content.",
+    );
+  }
 
   if (!configuredChannels().length) {
     warnings.push(

@@ -1,6 +1,6 @@
 import { authorizeAdmin } from "@/server/auth";
 import { errorJson, json } from "@/server/http";
-import { sqliteLeadStore } from "@/server/leads/store";
+import { postgresLeadStore } from "@/server/leads/store";
 import { isLeadStatus } from "@/server/leads/types";
 
 /**
@@ -26,7 +26,7 @@ export async function GET(
   if (!auth.ok) return errorJson(auth.message, auth.status);
 
   const { id } = await params;
-  const lead = sqliteLeadStore.get(id);
+  const lead = await postgresLeadStore.get(id);
 
   if (!lead) return errorJson("No lead with that id.", 404);
   return json({ lead });
@@ -55,7 +55,7 @@ export async function PATCH(
     );
   }
 
-  const updated = sqliteLeadStore.updateStatus(id, body.status);
+  const updated = await postgresLeadStore.updateStatus(id, body.status);
   if (!updated) return errorJson("No lead with that id.", 404);
 
   return json({ lead: updated });

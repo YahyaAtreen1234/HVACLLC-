@@ -14,13 +14,22 @@ import { phoneDisplay, telHref } from "@/lib/phone";
 import { getFaqsByTopic, getServices } from "@/server/content/read";
 import { pageMetadata } from "@/lib/seo";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "Contact & Request Service",
   description: `Request HVAC service from ${business.name}. Call ${business.phone.display} or send the form and we will call you back to confirm a time.`,
   path: "/contact",
 });
 
-export default function ContactPage() {
+export default async function ContactPage() {
   const hours = getHoursRows();
   const addressLine = [business.address.street, business.address.suite]
     .filter(Boolean)
@@ -152,7 +161,7 @@ export default function ContactPage() {
                 {business.responseTime}
               </p>
 
-              <ContactForm services={getServices()} />
+              <ContactForm services={await getServices()} />
             </div>
           </div>
         </Container>
@@ -171,7 +180,7 @@ export default function ContactPage() {
         </Section>
       ) : null}
 
-      <FaqSection faqs={getFaqsByTopic("general")} />
+      <FaqSection faqs={await getFaqsByTopic("general")} />
     </>
   );
 }

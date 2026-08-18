@@ -14,12 +14,12 @@ import { getTeam, getTeamIsPlaceholder } from "@/server/content/read";
  * Which is exactly why the names have to be real: the development-only notice
  * stays up until the placeholders are replaced.
  */
-export function TeamSection({
+export async function TeamSection({
   tone = "muted",
 }: {
   tone?: "light" | "muted";
 }) {
-  const team = getTeam();
+  const team = await getTeam();
   if (!team.length) return null;
 
   return (
@@ -31,7 +31,7 @@ export function TeamSection({
           lead="Small enough that you will recognise the person on your doorstep, and that they will remember your system next time."
         />
 
-        {getTeamIsPlaceholder() ? (
+        {await getTeamIsPlaceholder() ? (
           <Alert tone="info" title="Placeholder team members" className="mt-8">
             The names and bios below are stand-ins. Replace them in{" "}
             <code>src/data/team.ts</code> and add real photos to{" "}

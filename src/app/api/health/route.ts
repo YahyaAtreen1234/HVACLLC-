@@ -1,4 +1,4 @@
-import { getDb } from "@/server/db";
+import { query } from "@/server/db";
 import { configuredChannels, configurationWarnings } from "@/server/env";
 import { json } from "@/server/http";
 
@@ -21,7 +21,9 @@ export async function GET() {
   let databaseError: string | null = null;
 
   try {
-    getDb().prepare("SELECT 1").get();
+    // Also forces the migrations to run, so a schema problem shows up here
+    // rather than on a customer's first request.
+    await query("SELECT 1");
   } catch (error) {
     database = "error";
     databaseError = error instanceof Error ? error.message : String(error);

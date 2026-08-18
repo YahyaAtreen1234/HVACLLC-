@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
    * not use it is a needless way to inherit someone else's edge case.
    */
   output: process.env.VERCEL ? undefined : "standalone",
+
+  /**
+   * `pg` resolves optional native and dialect modules at runtime. Bundling it
+   * turns those into unresolved-import build errors, so it is loaded from
+   * node_modules instead.
+   */
+  serverExternalPackages: ["pg"],
 };
 
 export default nextConfig;

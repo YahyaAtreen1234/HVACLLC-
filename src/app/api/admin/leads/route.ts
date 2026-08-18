@@ -1,6 +1,6 @@
 import { authorizeAdmin } from "@/server/auth";
 import { errorJson, json } from "@/server/http";
-import { sqliteLeadStore } from "@/server/leads/store";
+import { postgresLeadStore } from "@/server/leads/store";
 import { isLeadStatus, type LeadStatus } from "@/server/leads/types";
 
 /**
@@ -45,10 +45,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const leads = sqliteLeadStore.list({ status, limit, offset });
+    const leads = await postgresLeadStore.list({ status, limit, offset });
 
     return json({
-      counts: sqliteLeadStore.countByStatus(),
+      counts: await postgresLeadStore.countByStatus(),
       returned: leads.length,
       leads,
     });

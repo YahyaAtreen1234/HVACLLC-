@@ -11,7 +11,7 @@ export default async function EditFaqPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const faq = faqsStore.byId(id);
+  const faq = await faqsStore.byId(id);
 
   if (!faq) notFound();
 

@@ -41,10 +41,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Where the mounted disk goes. Both paths must point inside it — anything
-# written elsewhere lives in the container's own layer and is destroyed on the
-# next deploy, taking the leads with it.
-ENV LEADS_DB_PATH=/data/leads.db
+# Leads and editable content live in PostgreSQL, supplied at runtime via
+# DATABASE_URL — deliberately not baked in, since it carries a password.
+#
+# Uploaded photos are still files, so a disk mounted at /data is still needed.
+# Anything written outside it lives in the container's own layer and is
+# destroyed on the next deploy.
 ENV UPLOADS_PATH=/data/uploads
 
 # Bind to all interfaces; the default of localhost is unreachable from outside

@@ -23,10 +23,17 @@ import { faqs } from "@/data/faqs";
 import { pageMetadata, serviceSchema } from "@/lib/seo";
 import { business } from "@/config/business";
 
-/** Pre-renders every service page at build time. */
-export function generateStaticParams() {
-  return getServices().map((service) => ({ slug: service.slug }));
-}
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
+// Rendered per request rather than pre-rendered: services are edited in the
+// admin panel, and a build-time list would go stale the moment one changed.
 
 export async function generateMetadata({
   params,
@@ -34,7 +41,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getService(slug);
 
   if (!service) {
     return pageMetadata({
@@ -67,11 +74,11 @@ export default async function ServiceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const service = getService(slug);
+  const service = await getService(slug);
 
   if (!service) notFound();
 
-  const related = getRelatedServices(service.slug);
+  const related = await getRelatedServices(service.slug);
   const topic = TOPIC_BY_CATEGORY[service.category];
   const serviceFaqs = faqs.filter((faq) => faq.topic === topic).slice(0, 5);
 
@@ -150,7 +157,7 @@ export default async function ServiceDetailPage({
             {/* Booking rail */}
             <aside className="lg:sticky lg:top-32 lg:self-start">
               <h2 className="sr-only">Request this service</h2>
-              <ContactForm services={getServices()} defaultService={service.slug} />
+              <ContactForm services={await getServices()} defaultService={service.slug} />
             </aside>
           </div>
         </Container>
@@ -194,7 +201,7 @@ export default async function ServiceDetailPage({
       />
 
       <JsonLd
-        data={serviceSchema({
+        data={await serviceSchema({
           name: service.title,
           description: service.summary,
           path: `/services/${service.slug}`,

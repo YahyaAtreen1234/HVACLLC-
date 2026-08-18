@@ -13,13 +13,14 @@ import { areasStore, faqsStore, servicesStore, teamStore } from "./store";
  * self-populating without a separate setup step.
  */
 
-function ensureSeeded(): void {
-  seedContentIfEmpty();
+async function ensureSeeded(): Promise<void> {
+  await seedContentIfEmpty();
 }
 
-export function getServices(): Service[] {
-  ensureSeeded();
-  return servicesStore.all().map((row) => ({
+export async function getServices(): Promise<Service[]> {
+  await ensureSeeded();
+  const rows = await servicesStore.all();
+  return rows.map((row) => ({
     slug: row.slug,
     name: row.name,
     title: row.description,
@@ -39,35 +40,38 @@ export function getServices(): Service[] {
   }));
 }
 
-export function getService(slug: string): Service | undefined {
-  return getServices().find((service) => service.slug === slug);
+export async function getService(slug: string): Promise<Service | undefined> {
+  return (await getServices()).find((service) => service.slug === slug);
 }
 
-export function getFeaturedServices(limit = 6): Service[] {
-  ensureSeeded();
-  const featured = servicesStore
-    .all()
+export async function getFeaturedServices(limit = 6): Promise<Service[]> {
+  await ensureSeeded();
+  const featured = (await servicesStore.all())
     .filter((row) => row.featured)
     .map((row) => row.slug);
 
-  const services = getServices();
+  const services = await getServices();
   const picked = services.filter((service) => featured.includes(service.slug));
   return (picked.length ? picked : services).slice(0, limit);
 }
 
-export function getRelatedServices(slug: string, limit = 3): Service[] {
-  const service = getService(slug);
+export async function getRelatedServices(
+  slug: string,
+  limit = 3,
+): Promise<Service[]> {
+  const service = await getService(slug);
   if (!service) return [];
-  const all = getServices();
+  const all = await getServices();
   return service.related
     .map((related) => all.find((entry) => entry.slug === related))
     .filter((entry): entry is Service => Boolean(entry))
     .slice(0, limit);
 }
 
-export function getTeam(): TeamMember[] {
-  ensureSeeded();
-  return teamStore.all().map((row) => ({
+export async function getTeam(): Promise<TeamMember[]> {
+  await ensureSeeded();
+  const rows = await teamStore.all();
+  return rows.map((row) => ({
     name: row.name,
     role: row.role,
     bio: row.bio,
@@ -83,23 +87,27 @@ export function getTeam(): TeamMember[] {
   }));
 }
 
-export function getFaqs(): Faq[] {
-  ensureSeeded();
-  return faqsStore.all().map((row) => ({
+export async function getFaqs(): Promise<Faq[]> {
+  await ensureSeeded();
+  const rows = await faqsStore.all();
+  return rows.map((row) => ({
     question: row.question,
     answer: row.answer,
     topic: row.topic as Faq["topic"],
   }));
 }
 
-export function getFaqsByTopic(topic: string, limit?: number): Faq[] {
-  const matching = getFaqs().filter((faq) => faq.topic === topic);
+export async function getFaqsByTopic(
+  topic: string,
+  limit?: number,
+): Promise<Faq[]> {
+  const matching = (await getFaqs()).filter((faq) => faq.topic === topic);
   return typeof limit === "number" ? matching.slice(0, limit) : matching;
 }
 
 /** A short mixed set for the home page — spread across topics, not just the first few. */
-export function getHomeFaqs(limit = 4): Faq[] {
-  const all = getFaqs();
+export async function getHomeFaqs(limit = 4): Promise<Faq[]> {
+  const all = await getFaqs();
   const seen = new Set<string>();
   const picked: Faq[] = [];
 
@@ -119,29 +127,35 @@ export function getHomeFaqs(limit = 4): Faq[] {
   return picked;
 }
 
-export function getTeamIsPlaceholder(): boolean {
-  return getTeam().some((member) => member.isPlaceholder);
+export async function getTeamIsPlaceholder(): Promise<boolean> {
+  return (await getTeam()).some((member) => member.isPlaceholder);
 }
 
 /** One service area by slug, for its dedicated page. */
-export function getServiceArea(slug: string): ServiceArea | undefined {
-  return getServiceAreas().find((area) => area.slug === slug);
+export async function getServiceArea(
+  slug: string,
+): Promise<ServiceArea | undefined> {
+  return (await getServiceAreas()).find((area) => area.slug === slug);
 }
 
 /** Nearby areas, for cross-linking between city pages. */
-export function getNearbyAreas(slug: string, limit = 6): ServiceArea[] {
-  return getServiceAreas()
+export async function getNearbyAreas(
+  slug: string,
+  limit = 6,
+): Promise<ServiceArea[]> {
+  return (await getServiceAreas())
     .filter((area) => area.slug !== slug)
     .slice(0, limit);
 }
 
-export function getServiceAreasArePlaceholder(): boolean {
-  return getServiceAreas().some((area) => area.isPlaceholder);
+export async function getServiceAreasArePlaceholder(): Promise<boolean> {
+  return (await getServiceAreas()).some((area) => area.isPlaceholder);
 }
 
-export function getServiceAreas(): ServiceArea[] {
-  ensureSeeded();
-  return areasStore.all().map((row) => ({
+export async function getServiceAreas(): Promise<ServiceArea[]> {
+  await ensureSeeded();
+  const rows = await areasStore.all();
+  return rows.map((row) => ({
     slug: row.slug,
     city: row.city,
     state: row.state,

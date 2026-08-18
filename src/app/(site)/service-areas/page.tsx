@@ -8,15 +8,37 @@ import { getServiceAreas, getFaqsByTopic } from "@/server/content/read";
 import { pageMetadata } from "@/lib/seo";
 import { business } from "@/config/business";
 
-const areaNames = getServiceAreas().map((area) => area.city).join(", ");
 
-export const metadata: Metadata = pageMetadata({
-  title: "Service Areas",
-  description: `${business.name} provides HVAC repair, installation and maintenance in ${areaNames}.`,
-  path: "/service-areas",
-});
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
 
-export default function ServiceAreasPage() {
+/**
+ * Built per request rather than as a module-level constant.
+ *
+ * The city list is a database read, and a top-level `await` runs the moment
+ * Next imports this file to inspect its route config — before any request, and
+ * during the build. That made the whole build depend on the database being
+ * reachable. Inside `generateMetadata` it runs when the page is actually
+ * rendered.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const areaNames = (await getServiceAreas())
+    .map((area) => area.city)
+    .join(", ");
+
+  return pageMetadata({
+    title: "Service Areas",
+    description: `${business.name} provides HVAC repair, installation and maintenance in ${areaNames}.`,
+    path: "/service-areas",
+  });
+}
+
+export default async function ServiceAreasPage() {
   return (
     <>
       <PageHero
@@ -28,7 +50,7 @@ export default function ServiceAreasPage() {
 
       <ServiceAreasSection showHeading={false} />
       <EmergencyCta />
-      <FaqSection faqs={getFaqsByTopic("general")} tone="muted" />
+      <FaqSection faqs={await getFaqsByTopic("general")} tone="muted" />
       <CtaBand
         title="Not sure if you are in range?"
         lead="Call and give us your ZIP — we will tell you straight away."

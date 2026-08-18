@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { sqliteLeadStore } from "@/server/leads/store";
+import { postgresLeadStore } from "@/server/leads/store";
 import {
   areasStore,
   faqsStore,
@@ -12,11 +12,11 @@ import { Card, PageHeader, StatCard, Badge } from "../ui";
 
 export const dynamic = "force-dynamic";
 
-export default function AdminOverview() {
-  seedContentIfEmpty();
+export default async function AdminOverview() {
+  await seedContentIfEmpty();
 
-  const counts = sqliteLeadStore.countByStatus();
-  const recent = sqliteLeadStore.list({ limit: 5 });
+  const counts = await postgresLeadStore.countByStatus();
+  const recent = await postgresLeadStore.list({ limit: 5 });
   const channels = configuredChannels();
 
   return (
@@ -95,10 +95,10 @@ export default function AdminOverview() {
           </h2>
           <ul className="space-y-2.5 text-sm">
             {[
-              { label: "Services", count: servicesStore.count(), href: "/admin/services" },
-              { label: "Team members", count: teamStore.count(), href: "/admin/team" },
-              { label: "FAQs", count: faqsStore.count(), href: "/admin/faqs" },
-              { label: "Service areas", count: areasStore.count(), href: "/admin/areas" },
+              { label: "Services", count: await servicesStore.count(), href: "/admin/services" },
+              { label: "Team members", count: await teamStore.count(), href: "/admin/team" },
+              { label: "FAQs", count: await faqsStore.count(), href: "/admin/faqs" },
+              { label: "Service areas", count: await areasStore.count(), href: "/admin/areas" },
             ].map((row) => (
               <li
                 key={row.label}

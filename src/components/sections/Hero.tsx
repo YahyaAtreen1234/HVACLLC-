@@ -15,8 +15,8 @@ import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
  * every width and costs nothing to download; it is `aria-hidden` because it
  * carries no meaning for a screen reader.
  */
-export function Hero() {
-  const areas = getServiceAreas();
+export async function Hero() {
+  const areas = await getServiceAreas();
   const areaSummary = areas
     .slice(0, 2)
     .map((area) => area.city)
@@ -101,7 +101,7 @@ export function Hero() {
       <div className="relative border-t border-ink-900/8 bg-white">
         <Container size="wide">
           <ul className="scrollbar-none -mx-1 flex snap-x gap-2 overflow-x-auto py-4">
-            {getFeaturedServices().map((service) => (
+            {(await getFeaturedServices()).map((service) => (
               <li key={service.slug} className="snap-start">
                 <Link
                   href={`/services/${service.slug}`}

@@ -5,9 +5,9 @@ import { Badge, EmptyState, PageHeader, TableWrap, tableClasses as t } from "../
 
 export const dynamic = "force-dynamic";
 
-export default function ServicesAdminPage() {
-  seedContentIfEmpty();
-  const services = servicesStore.all(true);
+export default async function ServicesAdminPage() {
+  await seedContentIfEmpty();
+  const services = await servicesStore.all(true);
 
   return (
     <>

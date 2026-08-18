@@ -11,7 +11,7 @@ import { business } from "@/config/business";
  * Service-area list. Doubles as local-SEO content, so the city names here must
  * be the real ones — a development warning appears while they are placeholders.
  */
-export function ServiceAreasSection({
+export async function ServiceAreasSection({
   tone = "light",
   showHeading = true,
 }: {
@@ -29,7 +29,7 @@ export function ServiceAreasSection({
           />
         ) : null}
 
-        {getServiceAreasArePlaceholder() ? (
+        {await getServiceAreasArePlaceholder() ? (
           <Alert tone="info" title="Placeholder service areas" className="mt-8">
             Some of these city names are stand-ins. Edit them at{" "}
             <code>/admin/areas</code> so they match the towns the office
@@ -40,7 +40,7 @@ export function ServiceAreasSection({
         ) : null}
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {getServiceAreas().map((area) => (
+          {(await getServiceAreas()).map((area) => (
             <li key={area.slug} id={area.slug} className="scroll-mt-32">
               <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
                 <span className="flex items-center gap-2 font-display text-lg font-bold text-ink-950">

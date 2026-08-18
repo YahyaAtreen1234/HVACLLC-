@@ -20,9 +20,11 @@ import type { Lead, LeadStatus, NewLead } from "../src/server/leads/types";
 function createFakeStore(): LeadStore & { leads: Lead[] } {
   const leads: Lead[] = [];
 
+  // Async to match `LeadStore`, which became promise-based when the backing
+  // database moved from in-process SQLite to Postgres over the network.
   return {
     leads,
-    create(input: NewLead) {
+    async create(input: NewLead) {
       const lead: Lead = {
         id: `test-${leads.length + 1}`,
         receivedAt: new Date().toISOString(),
@@ -34,27 +36,43 @@ function createFakeStore(): LeadStore & { leads: Lead[] } {
       leads.push(lead);
       return lead;
     },
-    list: () => leads,
-    get: (id) => leads.find((lead) => lead.id === id) ?? null,
-    updateStatus(id, status: LeadStatus) {
+    list: async () => leads,
+    get: async (id) => leads.find((lead) => lead.id === id) ?? null,
+    async updateStatus(id, status: LeadStatus) {
       const lead = leads.find((entry) => entry.id === id);
       if (!lead) return null;
       lead.status = status;
       return lead;
     },
-    markNotified(id, at) {
+    async markNotified(id, at) {
       const lead = leads.find((entry) => entry.id === id);
       if (lead) lead.notifiedAt = at;
     },
-    markNotifyFailed(id, error) {
+    async markNotifyFailed(id, error) {
       const lead = leads.find((entry) => entry.id === id);
       if (lead) lead.notifyError = error;
     },
-    countRecentByIpHash: (ipHash) =>
+    countRecentByIpHash: async (ipHash) =>
       leads.filter((lead) => lead.ipHash === ipHash).length,
-    countByStatus: () => ({ new: leads.length, contacted: 0, scheduled: 0, closed: 0 }),
+    countByStatus: async () => ({
+      new: leads.length,
+      contacted: 0,
+      scheduled: 0,
+      closed: 0,
+    }),
   };
 }
+
+/**
+ * Stands in for the content lookup.
+ *
+ * `submitLead` needs a display name for the chosen service, which in
+ * production means a database read. Supplying it here keeps the faked store as
+ * the only dependency these tests have — otherwise every one of them would
+ * need a live Postgres just to resolve a label.
+ */
+const fakeResolveServiceName = async (slug: string): Promise<string | null> =>
+  slug === "ac-repair" ? "AC Repair" : null;
 
 const validInput = {
   name: "Jordan Rivera",
@@ -111,7 +129,7 @@ describe("validation", () => {
 describe("submitLead", () => {
   test("stores a valid request and resolves the service name", async () => {
     const store = createFakeStore();
-    const outcome = await submitLead(validInput, context, store);
+    const outcome = await submitLead(validInput, context, store, fakeResolveServiceName);
 
     assert.equal(outcome.ok, true);
     assert.equal(store.leads.length, 1);
@@ -122,7 +140,7 @@ describe("submitLead", () => {
 
   test("never stores an invalid request", async () => {
     const store = createFakeStore();
-    const outcome = await submitLead({ ...validInput, phone: "" }, context, store);
+    const outcome = await submitLead({ ...validInput, phone: "" }, context, store, fakeResolveServiceName);
 
     assert.equal(outcome.ok, false);
     if (!outcome.ok) assert.equal(outcome.reason, "validation");
@@ -135,6 +153,7 @@ describe("submitLead", () => {
       { ...validInput, company: "spam-bot" },
       context,
       store,
+      fakeResolveServiceName,
     );
 
     assert.equal(outcome.ok, false);
@@ -144,7 +163,7 @@ describe("submitLead", () => {
 
   test("does not store the raw IP address", async () => {
     const store = createFakeStore();
-    await submitLead(validInput, { ...context, ipHash: "hashed-value" }, store);
+    await submitLead(validInput, { ...context, ipHash: "hashed-value" }, store, fakeResolveServiceName);
 
     const serialised = JSON.stringify(store.leads[0]);
     assert.ok(!serialised.includes("192.168"));
@@ -153,7 +172,7 @@ describe("submitLead", () => {
 
   test("keeps the lead even when no notification channel is configured", async () => {
     const store = createFakeStore();
-    const outcome = await submitLead(validInput, context, store);
+    const outcome = await submitLead(validInput, context, store, fakeResolveServiceName);
 
     // No channels are set in the test environment, so nothing is delivered —
     // but losing the lead over that would be the actual bug.
@@ -167,7 +186,7 @@ describe("submitLead", () => {
     const results = [];
 
     for (let i = 0; i < 7; i++) {
-      results.push(await submitLead(validInput, context, store));
+      results.push(await submitLead(validInput, context, store, fakeResolveServiceName));
     }
 
     const accepted = results.filter((result) => result.ok).length;
@@ -184,13 +203,14 @@ describe("submitLead", () => {
     const store = createFakeStore();
 
     for (let i = 0; i < 5; i++) {
-      await submitLead(validInput, context, store);
+      await submitLead(validInput, context, store, fakeResolveServiceName);
     }
 
     const other = await submitLead(
       validInput,
       { ...context, ipHash: "hash-b" },
       store,
+      fakeResolveServiceName,
     );
 
     assert.equal(other.ok, true, "a different visitor is unaffected");
@@ -202,7 +222,7 @@ describe("submitLead", () => {
       throw new Error("disk full");
     };
 
-    const outcome = await submitLead(validInput, context, store);
+    const outcome = await submitLead(validInput, context, store, fakeResolveServiceName);
 
     assert.equal(outcome.ok, false);
     if (!outcome.ok) assert.equal(outcome.reason, "storage");

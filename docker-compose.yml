@@ -7,6 +7,21 @@
 # gitignored and must never be committed.
 
 services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hvac
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hvac-local-dev}
+      POSTGRES_DB: hvac
+    volumes:
+      - hvac-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hvac"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   web:
     build:
       context: .
@@ -15,14 +30,19 @@ services:
         # browser downloads, so changing it later needs a rebuild.
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     restart: unless-stopped
+    depends_on:
+      # Waits for Postgres to accept connections, not merely to start, so the
+      # first request does not race the database coming up.
+      db:
+        condition: service_healthy
     ports:
       - "3000:3000"
     volumes:
-      # Named volume, not a bind mount to a host folder: it survives
-      # `docker compose down` and rebuilds. This is where the leads live.
-      - hvac-data:/data
+      # Uploaded photos still live on disk. Named volume rather than a bind
+      # mount so it survives `docker compose down` and rebuilds.
+      - hvac-uploads:/data
     environment:
-      LEADS_DB_PATH: /data/leads.db
+      DATABASE_URL: postgres://hvac:${POSTGRES_PASSWORD:-hvac-local-dev}@db:5432/hvac
       UPLOADS_PATH: /data/uploads
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
@@ -35,4 +55,5 @@ services:
       SERVICE_REQUEST_WEBHOOK_URL: ${SERVICE_REQUEST_WEBHOOK_URL:-}
 
 volumes:
-  hvac-data:
+  hvac-db:
+  hvac-uploads:

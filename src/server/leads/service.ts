@@ -7,7 +7,7 @@ import {
 } from "@/lib/validation";
 import { notifyNewLead } from "../notify";
 import { checkRateLimit } from "../rate-limit";
-import { sqliteLeadStore, type LeadStore } from "./store";
+import { postgresLeadStore, type LeadStore } from "./store";
 import type { Lead, LeadSource } from "./types";
 
 /**
@@ -39,10 +39,24 @@ export interface SubmitContext {
   userAgent: string | null;
 }
 
+/**
+ * Turns a service slug into its display name.
+ *
+ * Injected like the store so a caller — in practice a test — can supply the
+ * lookup instead of reaching the content database. Before this existed,
+ * `submitLead` imported the read layer directly, which meant a test that had
+ * carefully faked the store still needed a live database to run.
+ */
+export type ResolveServiceName = (slug: string) => Promise<string | null>;
+
+const lookUpServiceName: ResolveServiceName = async (slug) =>
+  (await getService(slug))?.name ?? null;
+
 export async function submitLead(
   input: Partial<ServiceRequestInput>,
   context: SubmitContext,
-  store: LeadStore = sqliteLeadStore,
+  store: LeadStore = postgresLeadStore,
+  resolveServiceName: ResolveServiceName = lookUpServiceName,
 ): Promise<SubmitOutcome> {
   // 1. Honeypot. Accepted-looking response, nothing stored — a bot that gets
   //    an error learns to try again, one that gets a 200 usually does not.
@@ -64,22 +78,37 @@ export async function submitLead(
 
   if (context.ipHash) {
     const since = new Date(Date.now() - DB_WINDOW_MS).toISOString();
-    if (store.countRecentByIpHash(context.ipHash, since) >= DB_MAX_PER_WINDOW) {
+    if (
+      (await store.countRecentByIpHash(context.ipHash, since)) >=
+      DB_MAX_PER_WINDOW
+    ) {
       return { ok: false, reason: "rate-limited", retryAfter: 900 };
     }
   }
 
   // 4. Store.
   const serviceSlug = input.serviceSlug!;
+
+  // The display name is cosmetic — the slug is the field that matters, and it
+  // is already validated. Losing an enquiry because a lookup for a prettier
+  // label failed would be the wrong trade, so a failure here degrades to the
+  // fallback instead of failing the submission.
+  let serviceName = "Something else / not sure";
+  try {
+    serviceName = (await resolveServiceName(serviceSlug)) ?? serviceName;
+  } catch {
+    // Left at the fallback deliberately.
+  }
+
   let lead: Lead;
   try {
-    lead = store.create({
+    lead = await store.create({
       name: input.name!.trim(),
       phone: input.phone!.trim(),
       email: input.email?.trim() || null,
       zip: input.zip!.trim(),
       serviceSlug,
-      serviceName: getService(serviceSlug)?.name ?? "Something else / not sure",
+      serviceName,
       urgency: input.urgency!,
       message: input.message?.trim() || null,
       source: context.source,

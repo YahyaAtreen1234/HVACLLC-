@@ -10,6 +10,15 @@ import { getFaqs } from "@/server/content/read";
 import { pageMetadata, faqSchema } from "@/lib/seo";
 import { business } from "@/config/business";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "Frequently Asked Questions",
   description: `Common questions about HVAC repair, replacement, maintenance and pricing, answered by ${business.name}.`,
@@ -25,8 +34,8 @@ const TOPICS: Array<{ key: string; label: string }> = [
   { key: "billing", label: "Pricing & billing" },
 ];
 
-export default function FaqsPage() {
-  const all = getFaqs();
+export default async function FaqsPage() {
+  const all = await getFaqs();
 
   const groups = TOPICS.map((topic) => ({
     ...topic,

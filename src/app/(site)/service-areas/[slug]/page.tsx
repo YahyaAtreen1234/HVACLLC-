@@ -16,7 +16,6 @@ import { Alert } from "@/components/ui/Alert";
 
 import {
   getServiceArea,
-  getServiceAreas,
   getNearbyAreas,
   getServices,
   getFeaturedServices,
@@ -25,6 +24,15 @@ import {
 import { pageMetadata } from "@/lib/seo";
 import { business } from "@/config/business";
 import { site } from "@/config/site";
+
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
 
 /**
  * Per-city landing pages.
@@ -36,9 +44,9 @@ import { site } from "@/config/site";
  * The cities come from the database, so adding one in the admin panel creates
  * its page — no code change, no redeploy.
  */
-export function generateStaticParams() {
-  return getServiceAreas().map((area) => ({ slug: area.slug }));
-}
+// Not pre-rendered: the cities live in a database the owner edits at runtime.
+// Building the list at deploy time would bake in whatever the content was then
+// and require the database to be reachable during the build.
 
 export async function generateMetadata({
   params,
@@ -46,7 +54,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const area = getServiceArea(slug);
+  const area = await getServiceArea(slug);
 
   if (!area) {
     return pageMetadata({
@@ -73,14 +81,14 @@ export default async function ServiceAreaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const area = getServiceArea(slug);
+  const area = await getServiceArea(slug);
 
   if (!area) notFound();
 
   const where = `${area.city}, ${area.state}`;
-  const nearby = getNearbyAreas(area.slug);
-  const services = getFeaturedServices(6);
-  const areaFaqs = getFaqs().slice(0, 5);
+  const nearby = await getNearbyAreas(area.slug);
+  const services = await getFeaturedServices(6);
+  const areaFaqs = (await getFaqs()).slice(0, 5);
 
   return (
     <>
@@ -161,7 +169,7 @@ export default async function ServiceAreaPage({
 
             <aside className="lg:sticky lg:top-32 lg:self-start">
               <h2 className="sr-only">Request service in {area.city}</h2>
-              <ContactForm services={getServices()} />
+              <ContactForm services={await getServices()} />
             </aside>
           </div>
         </Container>

@@ -15,6 +15,15 @@ import { repairVsReplace } from "@/data/comparison";
 import { getFaqsByTopic } from "@/server/content/read";
 import { pageMetadata } from "@/lib/seo";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: "HVAC Services",
   description:
@@ -22,7 +31,7 @@ export const metadata: Metadata = pageMetadata({
   path: "/services",
 });
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
   return (
     <>
       <PageHero
@@ -33,7 +42,7 @@ export default function ServicesPage() {
       />
 
       <ServicesGrid
-        services={getServices()}
+        services={await getServices()}
         eyebrow="Full catalogue"
         title="Pick the job you need"
         lead="Not sure which one applies? Describe the symptom when you call and we will sort it out."
@@ -74,7 +83,7 @@ export default function ServicesPage() {
 
       <ProcessSteps />
       <ReviewsSection tone="light" />
-      <FaqSection faqs={getFaqsByTopic("general")} tone="muted" />
+      <FaqSection faqs={await getFaqsByTopic("general")} tone="muted" />
       <CtaBand />
     </>
   );

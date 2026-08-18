@@ -5,9 +5,9 @@ import { Badge, EmptyState, PageHeader, TableWrap, tableClasses as t } from "../
 
 export const dynamic = "force-dynamic";
 
-export default function FaqsAdminPage() {
-  seedContentIfEmpty();
-  const faqs = faqsStore.all(true);
+export default async function FaqsAdminPage() {
+  await seedContentIfEmpty();
+  const faqs = await faqsStore.all(true);
   const todos = faqs.filter((faq) => faq.answer.includes("TODO")).length;
 
   return (

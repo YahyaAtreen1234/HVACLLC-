@@ -1,33 +1,29 @@
 import { randomUUID } from "node:crypto";
-import { getDb } from "../db";
-import type {
-  Lead,
-  LeadListOptions,
-  LeadStatus,
-  NewLead,
-} from "./types";
+import { count as countRows, execute, query, queryOne } from "../db";
+import type { Lead, LeadListOptions, LeadStatus, NewLead } from "./types";
 
 /**
  * Persistence boundary.
  *
- * Everything above this line works in terms of `LeadStore`, so swapping SQLite
- * for Postgres (required on serverless hosts with an ephemeral filesystem)
- * means writing one new implementation of this interface and nothing else.
+ * Everything above this line works in terms of `LeadStore`, so changing where
+ * leads are kept means writing one new implementation of this interface and
+ * nothing else. That is exactly what happened when SQLite was replaced by
+ * Postgres: only this file and the store it calls changed.
  */
 export interface LeadStore {
-  create(input: NewLead): Lead;
-  list(options?: LeadListOptions): Lead[];
-  get(id: string): Lead | null;
-  updateStatus(id: string, status: LeadStatus): Lead | null;
-  markNotified(id: string, at: string): void;
-  markNotifyFailed(id: string, error: string): void;
+  create(input: NewLead): Promise<Lead>;
+  list(options?: LeadListOptions): Promise<Lead[]>;
+  get(id: string): Promise<Lead | null>;
+  updateStatus(id: string, status: LeadStatus): Promise<Lead | null>;
+  markNotified(id: string, at: string): Promise<void>;
+  markNotifyFailed(id: string, error: string): Promise<void>;
   /** Submissions from this IP hash since the given ISO timestamp. */
-  countRecentByIpHash(ipHash: string, since: string): number;
-  countByStatus(): Record<LeadStatus, number>;
+  countRecentByIpHash(ipHash: string, since: string): Promise<number>;
+  countByStatus(): Promise<Record<LeadStatus, number>>;
 }
 
 /**
- * SQLite hands back loosely-typed rows, so the mapping is done explicitly
+ * The driver hands back loosely-typed rows, so the mapping is done explicitly
  * rather than with a blind cast. Columns declared NOT NULL go through `str`;
  * nullable ones through `strOrNull`. If the schema and this code ever drift,
  * the failure is a clear one at the boundary instead of an `undefined`
@@ -66,8 +62,8 @@ function toLead(row: Row): Lead {
   };
 }
 
-export const sqliteLeadStore: LeadStore = {
-  create(input) {
+export const postgresLeadStore: LeadStore = {
+  async create(input) {
     const lead: Lead = {
       id: randomUUID(),
       receivedAt: new Date().toISOString(),
@@ -77,14 +73,12 @@ export const sqliteLeadStore: LeadStore = {
       notifyError: null,
     };
 
-    getDb()
-      .prepare(
-        `INSERT INTO leads (
-           id, received_at, name, phone, email, zip, service_slug, service_name,
-           urgency, message, source, status, ip_hash, user_agent
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
+    await execute(
+      `INSERT INTO leads (
+         id, received_at, name, phone, email, zip, service_slug, service_name,
+         urgency, message, source, status, ip_hash, user_agent
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [
         lead.id,
         lead.receivedAt,
         lead.name,
@@ -99,75 +93,74 @@ export const sqliteLeadStore: LeadStore = {
         lead.status,
         lead.ipHash,
         lead.userAgent,
-      );
+      ],
+    );
 
     return lead;
   },
 
-  list({ status, limit = 50, offset = 0 } = {}) {
+  async list({ status, limit = 50, offset = 0 } = {}) {
     // Clamp so a caller cannot ask for the whole table in one request.
     const safeLimit = Math.min(Math.max(limit, 1), 200);
     const safeOffset = Math.max(offset, 0);
 
-    const rows: Row[] = status
-      ? getDb()
-          .prepare(
-            `SELECT * FROM leads WHERE status = ?
-             ORDER BY received_at DESC LIMIT ? OFFSET ?`,
-          )
-          .all(status, safeLimit, safeOffset)
-      : getDb()
-          .prepare(
-            `SELECT * FROM leads ORDER BY received_at DESC LIMIT ? OFFSET ?`,
-          )
-          .all(safeLimit, safeOffset);
+    const rows = status
+      ? await query(
+          `SELECT * FROM leads WHERE status = $1
+           ORDER BY received_at DESC LIMIT $2 OFFSET $3`,
+          [status, safeLimit, safeOffset],
+        )
+      : await query(
+          "SELECT * FROM leads ORDER BY received_at DESC LIMIT $1 OFFSET $2",
+          [safeLimit, safeOffset],
+        );
 
     return rows.map(toLead);
   },
 
-  get(id) {
-    const row: Row | undefined = getDb()
-      .prepare("SELECT * FROM leads WHERE id = ?")
-      .get(id);
+  async get(id) {
+    const row = await queryOne("SELECT * FROM leads WHERE id = $1", [id]);
     return row ? toLead(row) : null;
   },
 
-  updateStatus(id, status) {
-    const result = getDb()
-      .prepare("UPDATE leads SET status = ? WHERE id = ?")
-      .run(status, id);
-    if (result.changes === 0) return null;
+  async updateStatus(id, status) {
+    const changed = await execute(
+      "UPDATE leads SET status = $1 WHERE id = $2",
+      [status, id],
+    );
+    if (changed === 0) return null;
     return this.get(id);
   },
 
-  markNotified(id, at) {
-    getDb()
-      .prepare("UPDATE leads SET notified_at = ?, notify_error = NULL WHERE id = ?")
-      .run(at, id);
+  async markNotified(id, at) {
+    await execute(
+      "UPDATE leads SET notified_at = $1, notify_error = NULL WHERE id = $2",
+      [at, id],
+    );
   },
 
-  markNotifyFailed(id, error) {
-    getDb()
-      .prepare("UPDATE leads SET notify_error = ? WHERE id = ?")
-      .run(error.slice(0, 500), id);
+  async markNotifyFailed(id, error) {
+    await execute("UPDATE leads SET notify_error = $1 WHERE id = $2", [
+      error.slice(0, 500),
+      id,
+    ]);
   },
 
   countRecentByIpHash(ipHash, since) {
-    const row = getDb()
-      .prepare(
-        "SELECT COUNT(*) AS n FROM leads WHERE ip_hash = ? AND received_at >= ?",
-      )
-      .get(ipHash, since) as { n: number };
-    return row.n;
+    return countRows(
+      "SELECT COUNT(*) AS n FROM leads WHERE ip_hash = $1 AND received_at >= $2",
+      [ipHash, since],
+    );
   },
 
-  countByStatus() {
-    const rows = getDb()
-      .prepare("SELECT status, COUNT(*) AS n FROM leads GROUP BY status")
-      .all() as Array<{ status: LeadStatus; n: number }>;
+  async countByStatus() {
+    const rows = await query<{ status: LeadStatus; n: string | number }>(
+      "SELECT status, COUNT(*) AS n FROM leads GROUP BY status",
+    );
 
     const counts = { new: 0, contacted: 0, scheduled: 0, closed: 0 };
-    for (const row of rows) counts[row.status] = row.n;
+    // COUNT(*) is a bigint, which the driver returns as a string.
+    for (const row of rows) counts[row.status] = Number(row.n);
     return counts;
   },
 };

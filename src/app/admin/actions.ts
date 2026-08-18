@@ -22,7 +22,7 @@ import {
   type FaqInput,
   type ServiceAreaInput,
 } from "@/server/content/store";
-import { sqliteLeadStore } from "@/server/leads/store";
+import { postgresLeadStore } from "@/server/leads/store";
 import { saveUpload } from "@/server/content/uploads";
 import { isLeadStatus } from "@/server/leads/types";
 import type { IconName } from "@/types";
@@ -190,8 +190,8 @@ export async function saveService(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const input = await serviceFromForm(formData);
 
-  if (id) servicesStore.update(id, input);
-  else servicesStore.create(input);
+  if (id) await servicesStore.update(id, input);
+  else await servicesStore.create(input);
 
   refreshPublicPages();
   redirect("/admin/services");
@@ -199,7 +199,7 @@ export async function saveService(formData: FormData): Promise<void> {
 
 export async function deleteService(formData: FormData): Promise<void> {
   await requireSession();
-  servicesStore.remove(text(formData, "id"));
+  await servicesStore.remove(text(formData, "id"));
   refreshPublicPages();
   redirect("/admin/services");
 }
@@ -227,8 +227,8 @@ export async function saveTeamMember(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const input = await teamFromForm(formData);
 
-  if (id) teamStore.update(id, input);
-  else teamStore.create(input);
+  if (id) await teamStore.update(id, input);
+  else await teamStore.create(input);
 
   refreshPublicPages();
   redirect("/admin/team");
@@ -236,7 +236,7 @@ export async function saveTeamMember(formData: FormData): Promise<void> {
 
 export async function deleteTeamMember(formData: FormData): Promise<void> {
   await requireSession();
-  teamStore.remove(text(formData, "id"));
+  await teamStore.remove(text(formData, "id"));
   refreshPublicPages();
   redirect("/admin/team");
 }
@@ -261,8 +261,8 @@ export async function saveFaq(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const input = faqFromForm(formData);
 
-  if (id) faqsStore.update(id, input);
-  else faqsStore.create(input);
+  if (id) await faqsStore.update(id, input);
+  else await faqsStore.create(input);
 
   refreshPublicPages();
   redirect("/admin/faqs");
@@ -270,7 +270,7 @@ export async function saveFaq(formData: FormData): Promise<void> {
 
 export async function deleteFaq(formData: FormData): Promise<void> {
   await requireSession();
-  faqsStore.remove(text(formData, "id"));
+  await faqsStore.remove(text(formData, "id"));
   refreshPublicPages();
   redirect("/admin/faqs");
 }
@@ -299,8 +299,8 @@ export async function saveArea(formData: FormData): Promise<void> {
   const id = text(formData, "id");
   const input = areaFromForm(formData);
 
-  if (id) areasStore.update(id, input);
-  else areasStore.create(input);
+  if (id) await areasStore.update(id, input);
+  else await areasStore.create(input);
 
   refreshPublicPages();
   redirect("/admin/areas");
@@ -308,7 +308,7 @@ export async function saveArea(formData: FormData): Promise<void> {
 
 export async function deleteArea(formData: FormData): Promise<void> {
   await requireSession();
-  areasStore.remove(text(formData, "id"));
+  await areasStore.remove(text(formData, "id"));
   refreshPublicPages();
   redirect("/admin/areas");
 }
@@ -324,7 +324,7 @@ export async function updateLeadStatus(formData: FormData): Promise<void> {
   const status = text(formData, "status");
 
   if (isLeadStatus(status)) {
-    sqliteLeadStore.updateStatus(id, status);
+    await postgresLeadStore.updateStatus(id, status);
   }
 
   revalidatePath("/admin/leads");

@@ -11,7 +11,7 @@ export default async function EditTeamMemberPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const member = teamStore.byId(id);
+  const member = await teamStore.byId(id);
 
   if (!member) notFound();
 

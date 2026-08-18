@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 
 const isPlaceholder = (city: string) => /^(primary|second|third) city$/i.test(city);
 
-export default function AreasAdminPage() {
-  seedContentIfEmpty();
-  const areas = areasStore.all(true);
+export default async function AreasAdminPage() {
+  await seedContentIfEmpty();
+  const areas = await areasStore.all(true);
   const placeholders = areas.filter((area) => isPlaceholder(area.city)).length;
 
   return (

@@ -15,20 +15,29 @@ import { getFeaturedServices, getHomeFaqs } from "@/server/content/read";
 import { pageMetadata } from "@/lib/seo";
 import { business } from "@/config/business";
 
+
+/**
+ * Rendered per request. The content comes from a database the owner edits in
+ * the admin panel, so pre-rendering it at build time would serve the
+ * deploy-time copy until the next deploy — and would make the build depend on
+ * the database being reachable.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = pageMetadata({
   title: `HVAC Repair, Installation & Maintenance`,
   description: `${business.description} Call ${business.phone.display} to book a visit.`,
   path: "/",
 });
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <>
       <Hero />
       <TrustStrip />
 
       <ServicesGrid
-        services={getFeaturedServices()}
+        services={await getFeaturedServices()}
         eyebrow="What we do"
         title="Heating and cooling work, done properly"
         lead="Repairs when something fails, replacements when repair stops making sense, and maintenance so neither happens at the worst possible moment."
@@ -43,7 +52,7 @@ export default function HomePage() {
       <ProcessSteps />
       <ReviewsSection />
       <ServiceAreasSection tone="light" />
-      <FaqSection faqs={getHomeFaqs()} tone="muted" />
+      <FaqSection faqs={await getHomeFaqs()} tone="muted" />
       <CtaBand />
     </>
   );
