@@ -20,9 +20,16 @@ import { env } from "../env";
  * (S3/R2/Blob) on a host with an ephemeral filesystem.
  */
 
-/** Where uploaded files are written. Defaults alongside the database. */
+/**
+ * Where uploaded files are written. Defaults alongside the database.
+ *
+ * `turbopackIgnore` because this path is resolved from an environment variable
+ * at runtime. Without it the bundler cannot prove which directory is meant, so
+ * it conservatively traces the entire project into every serverless function —
+ * ballooning the bundle with source files that are never read.
+ */
 export function uploadsDir(): string {
-  return resolve(process.cwd(), env.uploadsPath);
+  return resolve(/*turbopackIgnore: true*/ process.cwd(), env.uploadsPath);
 }
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
@@ -115,11 +122,11 @@ export async function saveUpload(
   }
 
   const name = `${randomUUID()}${match.ext}`;
-  const dir = join(uploadsDir(), folder);
+  const dir = join(/*turbopackIgnore: true*/ uploadsDir(), folder);
 
   try {
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, name), bytes);
+    writeFileSync(join(/*turbopackIgnore: true*/ dir, name), bytes);
   } catch {
     return {
       ok: false,
@@ -146,7 +153,7 @@ export function readUpload(
   segments: string[],
 ): { bytes: Buffer; contentType: string } | null {
   const base = uploadsDir();
-  const target = resolve(base, ...segments);
+  const target = resolve(/*turbopackIgnore: true*/ base, ...segments);
 
   if (target !== base && !target.startsWith(base + sep)) return null;
   if (!existsSync(target)) return null;

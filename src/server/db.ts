@@ -26,9 +26,12 @@ interface DbGlobal {
 const globalRef = globalThis as unknown as DbGlobal;
 
 function resolveDbPath(): string {
+  // `turbopackIgnore` because the path comes from an environment variable and
+  // is only meaningful at runtime. Without it the bundler traces the whole
+  // project into every serverless function that touches the database.
   return isAbsolute(env.leadsDbPath)
     ? env.leadsDbPath
-    : join(process.cwd(), env.leadsDbPath);
+    : join(/*turbopackIgnore: true*/ process.cwd(), env.leadsDbPath);
 }
 
 function migrate(db: DatabaseSync): void {
