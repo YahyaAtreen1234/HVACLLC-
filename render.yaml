@@ -1,0 +1,66 @@
+# Render blueprint. Import this repo at https://render.com and Render reads
+# this file; the only manual step is filling in the secret values below.
+#
+# A paid instance type is required, not by preference but by necessity:
+# persistent disks are not offered on the free tier, and this site keeps its
+# leads and uploaded photos on disk.
+
+services:
+  - type: web
+    name: hvac-site
+    runtime: docker
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+
+    # The disk everything durable lives on. Without it, every deploy would
+    # start from an empty database and wipe the customer enquiries.
+    disk:
+      name: hvac-data
+      mountPath: /data
+      sizeGB: 1
+
+    envVars:
+      # Baked into the client bundle during the image build, so it must be set
+      # before the first deploy. Render exposes env vars to Docker builds as
+      # build args, which is how the Dockerfile receives it.
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+
+      # Must match the disk mount above.
+      - key: LEADS_DB_PATH
+        value: /data/leads.db
+      - key: UPLOADS_PATH
+        value: /data/uploads
+
+      # Admin panel login. ADMIN_PASSWORD_HASH is a scrypt hash, never the
+      # password itself — generate both with `npm run admin:setup`.
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+
+      # Signs admin session cookies. Generated rather than chosen, and
+      # changing it logs everyone out immediately.
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true
+
+      # Salts stored IP hashes. Generated so raw addresses are never kept.
+      - key: IP_HASH_SALT
+        generateValue: true
+
+      # Bearer token for the admin API routes. They stay disabled until set.
+      - key: ADMIN_API_TOKEN
+        generateValue: true
+
+      # Lead notifications. Without at least one of these, enquiries are
+      # recorded but nobody is told about them — set the Resend trio, or a
+      # webhook, or both.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NOTIFY_FROM_EMAIL
+        sync: false
+      - key: NOTIFY_TO_EMAIL
+        sync: false
+      - key: SERVICE_REQUEST_WEBHOOK_URL
+        sync: false

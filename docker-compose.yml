@@ -1,0 +1,38 @@
+# For running on your own VPS. On a managed host (Railway, Render) use their
+# dashboard or render.yaml instead — this file is not read there.
+#
+#   docker compose up -d --build
+#
+# Put the secrets in a .env file beside this one first. That file is
+# gitignored and must never be committed.
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Read at build time, not run time: it is compiled into the pages the
+        # browser downloads, so changing it later needs a rebuild.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Named volume, not a bind mount to a host folder: it survives
+      # `docker compose down` and rebuilds. This is where the leads live.
+      - hvac-data:/data
+    environment:
+      LEADS_DB_PATH: /data/leads.db
+      UPLOADS_PATH: /data/uploads
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
+      IP_HASH_SALT: ${IP_HASH_SALT}
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      NOTIFY_FROM_EMAIL: ${NOTIFY_FROM_EMAIL:-}
+      NOTIFY_TO_EMAIL: ${NOTIFY_TO_EMAIL:-}
+      SERVICE_REQUEST_WEBHOOK_URL: ${SERVICE_REQUEST_WEBHOOK_URL:-}
+
+volumes:
+  hvac-data:

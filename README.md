@@ -219,17 +219,91 @@ SQLite through Node's built-in `node:sqlite` — no native module to compile, no
 service to provision, no dependency to audit. Comfortably handles a
 contractor's lead volume.
 
-**On serverless hosts (Vercel, Netlify functions) the filesystem is ephemeral
-and this file is wiped between invocations.** For those, implement the
-`LeadStore` interface against Postgres; it is the only thing the rest of the
-backend knows about, so nothing else changes. On a VPS or container, mount a
-persistent volume and back the file up.
+**This host must give you a real disk. Vercel, Netlify functions and other
+serverless platforms will not work** — their filesystem is read-only apart
+from a `/tmp` that is wiped between requests. Deployed there, the marketing
+pages still render (they are prerendered at build), but every contact form
+submission returns 503 and the admin panel cannot save anything. See
+[Deploying](#deploying).
+
+If you ever do need serverless, implement the `LeadStore` interface against
+Postgres; it is the only thing the rest of the backend knows about, so nothing
+else changes. Uploads would need object storage at the same time.
 
 ### Privacy
 
 Raw IP addresses are never stored. They are salted and hashed
 (`src/server/request-context.ts`) because rate limiting only needs to know
 "same source or not" — so a database leak does not expose visitors' IPs.
+
+---
+
+## Deploying
+
+The site keeps leads, editable content and uploaded photos on disk, so it
+needs a host that provides one. That rules out serverless platforms and makes
+this a container deployment.
+
+Everything durable lives under a single mount point, `/data`. Two variables
+point at it, and **if either points outside the mounted disk, that data is
+destroyed on the next deploy**:
+
+```
+LEADS_DB_PATH=/data/leads.db
+UPLOADS_PATH=/data/uploads
+```
+
+### Before the first deploy
+
+Generate the admin credentials locally — the password is never stored, only a
+scrypt hash of it:
+
+```bash
+npm run admin:setup
+```
+
+Keep the printed `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH`; you set both on
+the host in the next step.
+
+### Render
+
+1. Push this repo to GitHub, then choose **New → Blueprint** on Render and
+   point it at the repo. It reads `render.yaml` and provisions the service,
+   the 1 GB disk at `/data`, and the generated secrets.
+2. Fill in the values marked `sync: false`: `NEXT_PUBLIC_SITE_URL` (your real
+   domain, e.g. `https://www.yourcompany.com`), the two admin credentials, and
+   at least one notification channel.
+3. Deploy, then open `/api/health` — it lists anything still missing.
+
+A paid instance is required. Render does not attach disks to free services,
+and without a disk this site loses its data on every deploy.
+
+### Railway or Fly.io
+
+Both build the `Dockerfile` directly. Attach a volume mounted at `/data`, set
+the same variables, and pass `NEXT_PUBLIC_SITE_URL` so it reaches the build.
+
+### Your own VPS
+
+```bash
+docker compose up -d --build
+```
+
+Put the variables in a `.env` file beside `docker-compose.yml` first. Data
+lives in the `hvac-data` named volume, which survives rebuilds and
+`docker compose down`.
+
+### Why NEXT_PUBLIC_SITE_URL is different
+
+It is compiled into the pages browsers download, not read when the server
+starts, so it is a **build argument**. Changing it later requires a rebuild,
+not just a restart. Get it right before the first deploy or your canonical
+URLs and structured data will point at the wrong domain.
+
+### Backups
+
+The entire site state is one directory. Copy `/data` on a schedule — that is
+your customer enquiries and every photo you have uploaded.
 
 ---
 
