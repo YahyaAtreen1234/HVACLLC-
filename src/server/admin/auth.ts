@@ -74,3 +74,48 @@ export function sessionCookieOptions() {
 export function isAdminConfigured(): boolean {
   return Boolean(env.adminPasswordHash);
 }
+
+/**
+ * What to do about a missing admin password, phrased for wherever this is
+ * running.
+ *
+ * The distinction matters: `.env.local` is gitignored and never deployed, so
+ * telling someone looking at a live site to edit it sends them somewhere that
+ * cannot possibly work. A deployed instance needs the variable set on the host
+ * and — the part people miss — a fresh deployment, because a new environment
+ * variable does not reach a build that already happened.
+ */
+export function adminSetupHint(): string {
+  if (!env.isProduction) {
+    return (
+      "No admin password is configured. Run `npm run admin:setup` to create " +
+      "one, then restart the dev server — credentials are read once at startup."
+    );
+  }
+
+  return (
+    "No admin password is configured on this deployment. In your hosting " +
+    "provider's environment variables set ADMIN_PASSWORD_HASH, ADMIN_USERNAME " +
+    "and ADMIN_SESSION_SECRET (copy them from your local .env.local), then " +
+    "redeploy — new variables do not apply to a deployment that is already built."
+  );
+}
+
+/**
+ * Configuration problems that would let a login succeed and then fail
+ * confusingly, rather than blocking it outright.
+ */
+export function adminConfigWarnings(): string[] {
+  const warnings: string[] = [];
+
+  if (isAdminConfigured() && !env.adminSessionSecret) {
+    warnings.push(
+      "ADMIN_SESSION_SECRET is not set, so sessions are signed with a key " +
+        "generated per process. On serverless hosting each instance has its " +
+        "own, so signing in will appear to work and then bounce you straight " +
+        "back here. Set it and redeploy.",
+    );
+  }
+
+  return warnings;
+}

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { env } from "@/server/env";
 import {
   SESSION_COOKIE,
+  adminSetupHint,
   createSessionToken,
   isAdminConfigured,
   sessionCookieOptions,
@@ -64,10 +65,7 @@ export async function login(
   const password = String(formData.get("password") ?? "");
 
   if (!isAdminConfigured()) {
-    return {
-      error:
-        "No admin password is configured on the server. Set ADMIN_PASSWORD_HASH in .env.local — see the README.",
-    };
+    return { error: adminSetupHint() };
   }
 
   // Usernames compare case-insensitively and ignore surrounding whitespace.

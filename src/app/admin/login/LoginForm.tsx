@@ -5,7 +5,12 @@ import { login, type LoginState } from "../actions";
 
 const initial: LoginState = { error: null };
 
-export function LoginForm() {
+/**
+ * `disabled` is set when the server has no password configured. The form is
+ * left visible rather than hidden so the page still looks like what it is, but
+ * nothing can be submitted — the notice above it explains why.
+ */
+export function LoginForm({ disabled = false }: { disabled?: boolean }) {
   const [state, formAction, pending] = useActionState(login, initial);
 
   return (
@@ -36,6 +41,7 @@ export function LoginForm() {
             type="text"
             autoComplete="username"
             required
+            disabled={disabled}
             className="w-full rounded-lg border border-white/15 bg-ink-900 px-3.5 py-2.5 text-white placeholder:text-ink-500 focus:border-flame-500 focus:outline-none focus:ring-2 focus:ring-flame-500/40"
           />
         </div>
@@ -53,6 +59,7 @@ export function LoginForm() {
             type="password"
             autoComplete="current-password"
             required
+            disabled={disabled}
             className="w-full rounded-lg border border-white/15 bg-ink-900 px-3.5 py-2.5 text-white placeholder:text-ink-500 focus:border-flame-500 focus:outline-none focus:ring-2 focus:ring-flame-500/40"
           />
         </div>
@@ -60,7 +67,7 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || disabled}
         className="mt-6 w-full rounded-lg bg-flame-500 px-4 py-3 font-display font-bold text-white transition-colors hover:bg-flame-600 focus:outline-none focus:ring-2 focus:ring-flame-500/50 focus:ring-offset-2 focus:ring-offset-ink-950 disabled:opacity-60"
       >
         {pending ? "Signing in…" : "Sign in"}
