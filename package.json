@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --test --import ./tests/register-aliases.mjs \"tests/*.test.ts\"",
-    "admin:setup": "node scripts/admin-setup.mjs"
+    "admin:setup": "node scripts/admin-setup.mjs",
+    "db:check": "node --env-file-if-exists=.env.local scripts/db-check.mjs"
   },
   "dependencies": {
     "next": "16.3.0",
