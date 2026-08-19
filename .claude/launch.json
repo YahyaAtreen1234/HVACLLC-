@@ -5,7 +5,13 @@
       "name": "hvac-site",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "port": 3100
+    },
+    {
+      "name": "hvac-no-db",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "3200"],
+      "port": 3200
     }
   ]
 }

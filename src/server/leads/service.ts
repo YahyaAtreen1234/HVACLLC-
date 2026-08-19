@@ -78,10 +78,20 @@ export async function submitLead(
 
   if (context.ipHash) {
     const since = new Date(Date.now() - DB_WINDOW_MS).toISOString();
-    if (
-      (await store.countRecentByIpHash(context.ipHash, since)) >=
-      DB_MAX_PER_WINDOW
-    ) {
+
+    // A database failure here must not escape. This check is a backstop behind
+    // the in-memory limiter above, and letting it throw turned an unreachable
+    // database into a bare 500 — instead of the handled response that tells
+    // the customer to phone instead. Skipping the backstop is the lesser harm:
+    // the in-memory window still applies.
+    let recent = 0;
+    try {
+      recent = await store.countRecentByIpHash(context.ipHash, since);
+    } catch {
+      recent = 0;
+    }
+
+    if (recent >= DB_MAX_PER_WINDOW) {
       return { ok: false, reason: "rate-limited", retryAfter: 900 };
     }
   }

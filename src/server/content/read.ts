@@ -2,6 +2,11 @@ import type { Faq, Service, ServiceArea, TeamMember } from "@/types";
 import { seedContentIfEmpty } from "./seed";
 import { areasStore, faqsStore, servicesStore, teamStore } from "./store";
 
+import { services as fallbackServices } from "@/data/services";
+import { team as fallbackTeam } from "@/data/team";
+import { faqs as fallbackFaqs } from "@/data/faqs";
+import { serviceAreas as fallbackAreas } from "@/data/service-areas";
+
 /**
  * What the public pages read.
  *
@@ -11,33 +16,71 @@ import { areasStore, faqsStore, servicesStore, teamStore } from "./store";
  *
  * `seedContentIfEmpty()` runs on first access, which makes a fresh install
  * self-populating without a separate setup step.
+ *
+ * ── Why every read has a fallback ──────────────────────────────────────────
+ *
+ * Pages render per request, so without this an unreachable database would take
+ * down the entire public site — not just the parts that need saving. Somebody
+ * whose air conditioning has failed would get a blank error page instead of a
+ * phone number, which is the worst possible moment to be unreachable.
+ *
+ * The TypeScript data files are already the shipped defaults that seed a fresh
+ * install, so they are exactly the right thing to serve when the database is
+ * unavailable: the site stays up with its default content, and only edits made
+ * in the admin panel are missing until the database returns.
+ *
+ * This is not a way to run without a database. Writes still fail loudly, the
+ * admin panel still errors, and /api/health still reports the fault.
  */
 
-async function ensureSeeded(): Promise<void> {
-  await seedContentIfEmpty();
+/** One warning per problem per process, so an outage does not flood the log. */
+const warned = new Set<string>();
+
+async function readOr<T>(
+  what: string,
+  fromDatabase: () => Promise<T>,
+  shippedDefault: () => T,
+): Promise<T> {
+  try {
+    await seedContentIfEmpty();
+    return await fromDatabase();
+  } catch (error) {
+    if (!warned.has(what)) {
+      warned.add(what);
+      console.error(
+        `[content] could not read ${what} from the database; serving the shipped defaults instead. ` +
+          `Admin panel edits will not appear until this is fixed. ` +
+          `Cause: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    return shippedDefault();
+  }
 }
 
 export async function getServices(): Promise<Service[]> {
-  await ensureSeeded();
-  const rows = await servicesStore.all();
-  return rows.map((row) => ({
-    slug: row.slug,
-    name: row.name,
-    title: row.description,
-    summary: row.summary,
-    icon: row.icon,
-    category: row.category as Service["category"],
-    includes: row.includes,
-    signs: row.signs,
-    body: row.body,
-    image: {
-      src: row.imageSrc,
-      alt: row.imageAlt,
-      width: 1200,
-      height: 800,
-    },
-    related: row.related,
-  }));
+  return readOr(
+    "services",
+    async () =>
+      (await servicesStore.all()).map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        title: row.description,
+        summary: row.summary,
+        icon: row.icon,
+        category: row.category as Service["category"],
+        includes: row.includes,
+        signs: row.signs,
+        body: row.body,
+        image: {
+          src: row.imageSrc,
+          alt: row.imageAlt,
+          width: 1200,
+          height: 800,
+        },
+        related: row.related,
+      })),
+    () => fallbackServices,
+  );
 }
 
 export async function getService(slug: string): Promise<Service | undefined> {
@@ -45,12 +88,19 @@ export async function getService(slug: string): Promise<Service | undefined> {
 }
 
 export async function getFeaturedServices(limit = 6): Promise<Service[]> {
-  await ensureSeeded();
-  const featured = (await servicesStore.all())
-    .filter((row) => row.featured)
-    .map((row) => row.slug);
-
   const services = await getServices();
+
+  const featured = await readOr(
+    "featured services",
+    async () =>
+      (await servicesStore.all())
+        .filter((row) => row.featured)
+        .map((row) => row.slug),
+    // Without the database there is no featured flag, so the first few stand
+    // in — better than an empty section on the home page.
+    () => [] as string[],
+  );
+
   const picked = services.filter((service) => featured.includes(service.slug));
   return (picked.length ? picked : services).slice(0, limit);
 }
@@ -69,32 +119,38 @@ export async function getRelatedServices(
 }
 
 export async function getTeam(): Promise<TeamMember[]> {
-  await ensureSeeded();
-  const rows = await teamStore.all();
-  return rows.map((row) => ({
-    name: row.name,
-    role: row.role,
-    bio: row.bio,
-    credentials: row.credentials.length ? row.credentials : undefined,
-    image: {
-      src: row.imageSrc,
-      alt: row.imageAlt,
-      width: 800,
-      height: 800,
-    },
-    // A member is treated as placeholder while the name still reads like a prompt.
-    isPlaceholder: /^add /i.test(row.name),
-  }));
+  return readOr(
+    "team members",
+    async () =>
+      (await teamStore.all()).map((row) => ({
+        name: row.name,
+        role: row.role,
+        bio: row.bio,
+        credentials: row.credentials.length ? row.credentials : undefined,
+        image: {
+          src: row.imageSrc,
+          alt: row.imageAlt,
+          width: 800,
+          height: 800,
+        },
+        // A member is treated as placeholder while the name still reads like a prompt.
+        isPlaceholder: /^add /i.test(row.name),
+      })),
+    () => fallbackTeam,
+  );
 }
 
 export async function getFaqs(): Promise<Faq[]> {
-  await ensureSeeded();
-  const rows = await faqsStore.all();
-  return rows.map((row) => ({
-    question: row.question,
-    answer: row.answer,
-    topic: row.topic as Faq["topic"],
-  }));
+  return readOr(
+    "FAQs",
+    async () =>
+      (await faqsStore.all()).map((row) => ({
+        question: row.question,
+        answer: row.answer,
+        topic: row.topic as Faq["topic"],
+      })),
+    () => fallbackFaqs,
+  );
 }
 
 export async function getFaqsByTopic(
@@ -153,13 +209,16 @@ export async function getServiceAreasArePlaceholder(): Promise<boolean> {
 }
 
 export async function getServiceAreas(): Promise<ServiceArea[]> {
-  await ensureSeeded();
-  const rows = await areasStore.all();
-  return rows.map((row) => ({
-    slug: row.slug,
-    city: row.city,
-    state: row.state,
-    neighborhoods: row.neighborhoods,
-    isPlaceholder: row.isPlaceholder,
-  }));
+  return readOr(
+    "service areas",
+    async () =>
+      (await areasStore.all()).map((row) => ({
+        slug: row.slug,
+        city: row.city,
+        state: row.state,
+        neighborhoods: row.neighborhoods,
+        isPlaceholder: row.isPlaceholder,
+      })),
+    () => fallbackAreas,
+  );
 }
