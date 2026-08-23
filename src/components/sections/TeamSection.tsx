@@ -27,8 +27,8 @@ export async function TeamSection({
     <Section tone={tone} id="team">
       <Container>
         <SectionHeading
-          eyebrow="The team"
-          title="Who turns up at your door"
+          eyebrow="Our team"
+          title="Meet our team"
           lead="Small enough that you will recognise the person on your doorstep, and that they will remember your system next time."
         />
 
@@ -43,7 +43,10 @@ export async function TeamSection({
 
         <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {team.map((member, index) => (
-            <Reveal as="li" key={member.role} delay={index * 70}>
+            // Keyed by position rather than role: two technicians sharing a
+            // job title would otherwise collide, and React would treat them as
+            // the same card.
+            <Reveal as="li" key={`${index}-${member.name}`} delay={index * 70}>
               <article className="group h-full overflow-hidden rounded-2xl border border-ink-900/8 bg-white shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0">
                 {/*
                   Initials on a brand colour until a photo exists. MediaFrame's

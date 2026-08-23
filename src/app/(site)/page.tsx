@@ -7,6 +7,7 @@ import { ServicesGrid } from "@/components/sections/ServicesGrid";
 import { WhyUs } from "@/components/sections/WhyUs";
 import { ProcessSteps } from "@/components/sections/ProcessSteps";
 import { ReviewsSection } from "@/components/sections/ReviewsSection";
+import { TeamSection } from "@/components/sections/TeamSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { ServiceAreasSection } from "@/components/sections/ServiceAreasSection";
 import { EmergencyCta } from "@/components/cta/EmergencyCta";
@@ -50,6 +51,14 @@ export default async function HomePage() {
 
       <WhyUs />
       <ProcessSteps />
+
+      {/*
+        Faces before testimonials. A customer is deciding whether to let a
+        stranger into their home, so showing who actually turns up carries more
+        weight than a quote from someone they have never met.
+      */}
+      <TeamSection tone="light" />
+
       <ReviewsSection />
       <ServiceAreasSection tone="light" />
       <FaqSection faqs={await getHomeFaqs()} tone="muted" />
