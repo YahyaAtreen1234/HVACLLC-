@@ -50,7 +50,7 @@ export default function CareersPage() {
                             <Icon
                               name="map-pin"
                               size={15}
-                              className="text-flame-500"
+                              className="text-flame-600"
                             />
                             {job.location}
                           </span>
@@ -58,7 +58,7 @@ export default function CareersPage() {
                             <Icon
                               name="clock"
                               size={15}
-                              className="text-flame-500"
+                              className="text-flame-600"
                             />
                             {job.type}
                           </span>
@@ -123,7 +123,7 @@ export default function CareersPage() {
 
                     <Link
                       href={`/contact?job=${job.slug}`}
-                      className="mt-7 inline-flex items-center gap-2 rounded-lg bg-flame-500 px-5 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-600"
+                      className="mt-7 inline-flex items-center gap-2 rounded-lg bg-flame-600 px-5 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-700"
                     >
                       Apply for this role
                       <Icon name="arrow-right" size={16} />
@@ -144,7 +144,7 @@ export default function CareersPage() {
               </p>
               <Link
                 href="/contact?job=general"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-flame-500 px-5 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-600"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-flame-600 px-5 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-700"
               >
                 Send your details
                 <Icon name="arrow-right" size={16} />
@@ -174,7 +174,7 @@ export default function CareersPage() {
                   <Icon
                     name="check"
                     size={18}
-                    className="mt-1 shrink-0 text-flame-500"
+                    className="mt-1 shrink-0 text-flame-600"
                   />
                   {perk}
                 </li>

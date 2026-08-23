@@ -56,7 +56,7 @@ export function AboutBand() {
             <div className="mt-9">
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 rounded-full bg-flame-500 px-6 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-600"
+                className="inline-flex items-center gap-2 rounded-full bg-flame-600 px-6 py-3 font-display text-sm font-semibold text-white transition-colors hover:bg-flame-700"
               >
                 Learn more about us
                 <Icon name="arrow-right" size={16} />
@@ -94,7 +94,7 @@ export function AboutBand() {
                 <div key={stat.label} className="text-center">
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
-                    <span className="block font-display text-4xl font-bold text-flame-500">
+                    <span className="block font-display text-4xl font-bold text-flame-600">
                       {stat.value}
                     </span>
                     <span className="mt-1 block font-display text-sm font-semibold text-ink-950">

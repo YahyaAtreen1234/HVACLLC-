@@ -44,7 +44,7 @@ export async function ServiceAreasSection({
             <li key={area.slug} id={area.slug} className="scroll-mt-32">
               <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
                 <span className="flex items-center gap-2 font-display text-lg font-bold text-ink-950">
-                  <Icon name="map-pin" size={18} className="text-flame-500" />
+                  <Icon name="map-pin" size={18} className="text-flame-600" />
                   <Link
                     href={`/service-areas/${area.slug}`}
                     className="after:absolute after:inset-0 after:content-[''] hover:text-flame-600"

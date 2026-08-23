@@ -126,7 +126,7 @@ export default async function MaintenancePlansPage() {
                     className={cn(
                       "mt-7 inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-display text-sm font-semibold transition-colors",
                       plan.featured
-                        ? "bg-flame-500 text-white hover:bg-flame-600"
+                        ? "bg-flame-600 text-white hover:bg-flame-700"
                         : "border border-ink-900/15 text-ink-950 hover:border-flame-500/40 hover:text-flame-600",
                     )}
                   >
@@ -160,7 +160,7 @@ export default async function MaintenancePlansPage() {
                 <Icon
                   name="check"
                   size={19}
-                  className="mt-1 shrink-0 text-flame-500"
+                  className="mt-1 shrink-0 text-flame-600"
                 />
                 {item}
               </li>

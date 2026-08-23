@@ -59,12 +59,12 @@ function escapeHtml(value: string): string {
 
 function htmlBody(lead: Lead): string {
   const row = (label: string, value: string) =>
-    `<tr><td style="padding:6px 14px 6px 0;color:#5b6b7c;font:600 13px system-ui">${label}</td>` +
-    `<td style="padding:6px 0;color:#0c1e2e;font:14px system-ui">${escapeHtml(value)}</td></tr>`;
+    `<tr><td style="padding:6px 14px 6px 0;color:#5c6e85;font:600 13px system-ui">${label}</td>` +
+    `<td style="padding:6px 0;color:#001c41;font:14px system-ui">${escapeHtml(value)}</td></tr>`;
 
-  return `<div style="font:14px system-ui;color:#0c1e2e">
+  return `<div style="font:14px system-ui;color:#001c41">
     <h2 style="margin:0 0 4px;font:700 20px system-ui">New service request</h2>
-    <p style="margin:0 0 16px;color:#5b6b7c">${escapeHtml(business.name)}</p>
+    <p style="margin:0 0 16px;color:#5c6e85">${escapeHtml(business.name)}</p>
     <table style="border-collapse:collapse">
       ${row("Name", lead.name)}
       ${row("Phone", lead.phone)}
@@ -73,9 +73,9 @@ function htmlBody(lead: Lead): string {
       ${row("Service", lead.serviceName)}
       ${row("Urgency", URGENCY_LABEL[lead.urgency] ?? lead.urgency)}
     </table>
-    <p style="margin:16px 0 4px;color:#5b6b7c;font:600 13px system-ui">Message</p>
+    <p style="margin:16px 0 4px;color:#5c6e85;font:600 13px system-ui">Message</p>
     <p style="margin:0;white-space:pre-wrap">${escapeHtml(lead.message?.trim() || "(none)")}</p>
-    <p style="margin:20px 0 0;color:#8798a8;font-size:12px">Ref ${lead.id}</p>
+    <p style="margin:20px 0 0;color:#94a0af;font-size:12px">Ref ${lead.id}</p>
   </div>`;
 }
 

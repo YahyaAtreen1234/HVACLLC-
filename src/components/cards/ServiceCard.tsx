@@ -32,7 +32,7 @@ export function ServiceCard({
         className={cn(
           "flex size-12 items-center justify-center rounded-xl transition-colors duration-300",
           service.category === "heating"
-            ? "bg-flame-50 text-flame-600 group-hover:bg-flame-500 group-hover:text-white"
+            ? "bg-flame-50 text-flame-600 group-hover:bg-flame-700 group-hover:text-white"
             : "bg-chill-100 text-chill-600 group-hover:bg-chill-500 group-hover:text-white",
         )}
       >

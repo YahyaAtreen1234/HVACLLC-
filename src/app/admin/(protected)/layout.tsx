@@ -29,7 +29,7 @@ export default async function ProtectedAdminLayout({
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"
-              className="flex size-9 items-center justify-center rounded-lg bg-flame-500 font-display text-sm font-bold text-white"
+              className="flex size-9 items-center justify-center rounded-lg bg-flame-600 font-display text-sm font-bold text-white"
             >
               A
             </span>

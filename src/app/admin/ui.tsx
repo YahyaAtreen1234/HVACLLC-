@@ -23,7 +23,7 @@ export function PageHeader({
       {action ? (
         <Link
           href={action.href}
-          className="rounded-lg bg-flame-500 px-4 py-2.5 text-sm font-display font-bold text-white transition-colors hover:bg-flame-600"
+          className="rounded-lg bg-flame-600 px-4 py-2.5 text-sm font-display font-bold text-white transition-colors hover:bg-flame-700"
         >
           {action.label}
         </Link>
@@ -89,7 +89,7 @@ export function EmptyState({
       {action ? (
         <Link
           href={action.href}
-          className="mt-5 inline-block rounded-lg bg-flame-500 px-4 py-2.5 text-sm font-display font-bold text-white transition-colors hover:bg-flame-600"
+          className="mt-5 inline-block rounded-lg bg-flame-600 px-4 py-2.5 text-sm font-display font-bold text-white transition-colors hover:bg-flame-700"
         >
           {action.label}
         </Link>
@@ -288,7 +288,7 @@ export function Checkbox({
         name={name}
         type="checkbox"
         defaultChecked={defaultChecked}
-        className="mt-0.5 size-4 rounded border-ink-900/25 text-flame-500 focus:ring-2 focus:ring-flame-500/30"
+        className="mt-0.5 size-4 rounded border-ink-900/25 text-flame-600 focus:ring-2 focus:ring-flame-500/30"
       />
       <div>
         <label htmlFor={id} className="text-sm font-semibold text-ink-900">
@@ -311,7 +311,7 @@ export function SubmitRow({
     <div className="flex flex-wrap items-center gap-3 border-t border-ink-900/10 pt-5">
       <button
         type="submit"
-        className="rounded-lg bg-flame-500 px-5 py-2.5 font-display text-sm font-bold text-white transition-colors hover:bg-flame-600"
+        className="rounded-lg bg-flame-600 px-5 py-2.5 font-display text-sm font-bold text-white transition-colors hover:bg-flame-700"
       >
         {label}
       </button>

@@ -43,7 +43,7 @@ export default async function NotFound() {
                   <Icon
                     name={service.icon}
                     size={20}
-                    className="text-flame-500"
+                    className="text-flame-600"
                   />
                   <span className="font-display font-semibold text-ink-900">
                     {service.name}

@@ -210,7 +210,7 @@ export default async function ServiceAreaPage({
                     href={`/service-areas/${other.slug}`}
                     className="inline-flex items-center gap-2 rounded-full border border-ink-900/12 px-4 py-2 text-sm text-ink-700 transition-colors hover:border-flame-500/50 hover:bg-flame-50 hover:text-flame-700"
                   >
-                    <Icon name="map-pin" size={15} className="text-flame-500" />
+                    <Icon name="map-pin" size={15} className="text-flame-600" />
                     {other.city}
                   </Link>
                 </li>

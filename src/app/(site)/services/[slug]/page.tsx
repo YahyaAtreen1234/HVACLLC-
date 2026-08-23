@@ -142,7 +142,7 @@ export default async function ServiceDetailPage({
                         <Icon
                           name="alert"
                           size={18}
-                          className="mt-0.5 shrink-0 text-flame-500"
+                          className="mt-0.5 shrink-0 text-flame-600"
                         />
                         {item}
                       </li>

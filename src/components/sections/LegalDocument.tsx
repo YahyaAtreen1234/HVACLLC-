@@ -59,7 +59,7 @@ export function LegalDocument({
                 </p>
               ))}
               {section.bullets?.length ? (
-                <ul className="mt-4 list-disc space-y-2 pl-6 text-ink-700 marker:text-flame-500">
+                <ul className="mt-4 list-disc space-y-2 pl-6 text-ink-700 marker:text-flame-600">
                   {section.bullets.map((bullet) => (
                     <li key={bullet} className="leading-relaxed">
                       {bullet}

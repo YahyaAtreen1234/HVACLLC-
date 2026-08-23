@@ -22,7 +22,7 @@ const BASE =
 const VARIANTS: Record<ButtonVariant, string> = {
   // Main conversion action — the only element on a page in flame orange.
   primary:
-    "bg-flame-500 text-white shadow-card hover:bg-flame-600 hover:shadow-card-hover",
+    "bg-flame-600 text-white shadow-card hover:bg-flame-700 hover:shadow-card-hover",
   // Sits next to primary on light backgrounds.
   secondary:
     "border-2 border-ink-900/15 bg-white text-ink-900 shadow-card hover:border-ink-900/30 hover:shadow-card-hover",

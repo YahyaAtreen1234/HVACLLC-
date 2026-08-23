@@ -27,7 +27,7 @@ export default async function LoginPage() {
         <div className="mb-8 text-center">
           <span
             aria-hidden="true"
-            className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-flame-500 font-display text-lg font-bold text-white"
+            className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-flame-600 font-display text-lg font-bold text-white"
           >
             A
           </span>

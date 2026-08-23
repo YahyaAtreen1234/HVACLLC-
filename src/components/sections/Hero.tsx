@@ -34,7 +34,7 @@ export async function Hero() {
               <br />
               you can
               <br />
-              <span className="text-flame-500">count on</span>
+              <span className="text-flame-600">count on</span>
             </h1>
 
             <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-ink-700">
@@ -45,7 +45,7 @@ export async function Hero() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-lg bg-flame-500 px-6 py-3.5 font-display text-sm font-semibold tracking-wide text-white uppercase shadow-sm transition-colors hover:bg-flame-600"
+                className="inline-flex items-center gap-2 rounded-lg bg-flame-600 px-6 py-3.5 font-display text-sm font-semibold tracking-wide text-white uppercase shadow-sm transition-colors hover:bg-flame-700"
               >
                 Get a free quote
                 <Icon name="arrow-right" size={16} />
@@ -112,7 +112,7 @@ export async function Hero() {
                   href={`/services/${service.slug}`}
                   className="flex items-center gap-2 rounded-full border border-ink-900/12 px-4 py-2 text-sm whitespace-nowrap text-ink-700 transition-colors hover:border-flame-500/50 hover:bg-flame-50 hover:text-flame-700"
                 >
-                  <Icon name={service.icon} size={16} className="text-flame-500" />
+                  <Icon name={service.icon} size={16} className="text-flame-600" />
                   {service.name}
                 </Link>
               </li>

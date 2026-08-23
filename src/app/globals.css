@@ -12,33 +12,34 @@
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* ------------------------------------------------------------------ */
-  /* Brand navy — sampled from the logo (#001838), not eyeballed.        */
+  /* Brand navy #001C41 — the exact value from the logo and business card.  */
   /* Regenerate with `npm run brand:colors` if the logo is ever redrawn. */
   /* ------------------------------------------------------------------ */
-  --color-ink-50: #f7f8f9;
-  --color-ink-100: #edeff1;
-  --color-ink-200: #d9dce1;
-  --color-ink-300: #b8bec7;
-  --color-ink-400: #8f99a7;
-  --color-ink-500: #707e90;
-  --color-ink-600: #57677c;
-  --color-ink-700: #3d4f68;
-  --color-ink-800: #243854;
-  --color-ink-900: #001838;
-  --color-ink-950: #001128;
+  --color-ink-50: #f9f9fa;
+  --color-ink-100: #f0f1f4;
+  --color-ink-200: #dbdfe4;
+  --color-ink-300: #bdc4ce;
+  --color-ink-400: #94a0af;
+  --color-ink-500: #758498;
+  --color-ink-600: #5c6e85;
+  --color-ink-700: #425772;
+  --color-ink-800: #29405f;
+  --color-ink-900: #122c4e;
+  --color-ink-950: #001c41;
 
-  /* Brand orange — sampled from the logo (#f85000). Primary action. */
-  --color-flame-50: #fff5f0;
-  --color-flame-100: #fee7db;
-  --color-flame-200: #fdcbb3;
-  --color-flame-300: #fca880;
-  --color-flame-400: #fa7e42;
-  --color-flame-500: #f85000;
-  --color-flame-600: #d04300;
-  --color-flame-700: #a93600;
-  --color-flame-800: #812a00;
-  --color-flame-900: #5e1e00;
-  --color-flame-950: #401500;
+  /* Brand orange #EE600C. Note: white text on -500 is only 3.33:1, so
+     buttons and orange body text use -600, which reaches 4.5:1. */
+  --color-flame-50: #fef7f3;
+  --color-flame-100: #fdece2;
+  --color-flame-200: #fad2bb;
+  --color-flame-300: #f7b38a;
+  --color-flame-400: #f38b4e;
+  --color-flame-500: #ee600c;
+  --color-flame-600: #c6500a;
+  --color-flame-700: #9d3f08;
+  --color-flame-800: #773006;
+  --color-flame-900: #562304;
+  --color-flame-950: #391703;
 
   /* Cool: cooling / accent -------------------------------------------- */
   --color-chill-100: #d7f1fb;
@@ -49,10 +50,10 @@
   --color-chill-600: #127cad;
 
   /* Warm neutrals: keeps the page off pure-white ----------------------- */
-  --color-sand-50: #fbf9f6;
-  --color-sand-100: #f5f1ea;
-  --color-sand-200: #e9e2d7;
-  --color-sand-300: #d7cdbd;
+  --color-sand-50: #ffffff;
+  --color-sand-100: #f4f6f8;
+  --color-sand-200: #e6eaef;
+  --color-sand-300: #ccd4dd;
 
   /* Feedback ------------------------------------------------------------ */
   --color-success-50: #ecfdf3;

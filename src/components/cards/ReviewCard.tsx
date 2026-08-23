@@ -16,7 +16,7 @@ export function StarRating({
 }) {
   return (
     <div
-      className={cn("flex items-center gap-0.5 text-flame-500", className)}
+      className={cn("flex items-center gap-0.5 text-flame-600", className)}
       role="img"
       aria-label={`${rating} out of 5 stars`}
     >
@@ -51,7 +51,7 @@ export function ReviewCard({
         className,
       )}
     >
-      <Icon name="quote" size={28} className="text-flame-500/25" />
+      <Icon name="quote" size={28} className="text-flame-600/25" />
       <StarRating rating={review.rating} className="mt-4" />
 
       <blockquote className="mt-4 grow text-[0.95rem] leading-relaxed text-ink-800">

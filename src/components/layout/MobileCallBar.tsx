@@ -28,7 +28,7 @@ export function MobileCallBar() {
         </a>
         <Link
           href="/contact"
-          className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-flame-500 font-display font-semibold text-white transition-colors hover:bg-flame-600"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-flame-600 font-display font-semibold text-white transition-colors hover:bg-flame-700"
         >
           {cta.primary}
         </Link>

@@ -22,7 +22,7 @@ export function ProcessSteps() {
               <div className="h-full bg-ink-950 p-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-5xl font-bold text-flame-500/40"
+                  className="font-display text-5xl font-bold text-flame-600/40"
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
