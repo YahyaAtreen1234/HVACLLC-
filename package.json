@@ -11,6 +11,7 @@
     "test": "node --test --import ./tests/register-aliases.mjs \"tests/*.test.ts\"",
     "admin:setup": "node scripts/admin-setup.mjs",
     "admin:env": "node scripts/admin-env.mjs",
+    "brand:colors": "node scripts/brand-colors.mjs",
     "db:check": "node --env-file-if-exists=.env.local scripts/db-check.mjs"
   },
   "dependencies": {

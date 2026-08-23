@@ -36,14 +36,20 @@ export const business = {
   // ---------------------------------------------------------------------------
   // Identity
   // ---------------------------------------------------------------------------
-  name: "HVAC Heating and Cooling",
+  name: "NorthStar HVAC",
   /**
-   * TODO: confirm this matches the entity registered with the Arizona
-   * Corporation Commission. It appears in the footer copyright and in the
-   * structured data search engines read, so a guess at the suffix is worth
-   * five minutes checking.
+   * TODO: confirm the registered entity name. The business card's domain
+   * (northstarhvacllc.us) implies an LLC, but a domain is not a filing. This
+   * appears in the footer copyright and in structured data, so it is worth
+   * checking against the actual registration.
    */
-  legalName: "HVAC Heating and Cooling LLC",
+  legalName: "NorthStar HVAC LLC",
+  /**
+   * The short service list from the business card. Kept separate from
+   * `tagline`, which is a sentence used in running prose — this one is a
+   * label, sitting under the logo.
+   */
+  serviceLine: "Heating · Cooling · Installation · Repair",
   /** TODO: replace with a one-line positioning statement you can stand behind. */
   tagline: "Heating and cooling done right the first time",
   /** TODO: replace with a short factual description of the business. */
@@ -56,14 +62,13 @@ export const business = {
   // Contact
   // ---------------------------------------------------------------------------
   phone: {
-    /** TODO: replace with the real main line. 555-01xx is a reserved fictional range. */
-    display: "(555) 555-0100",
+    display: "(314) 435-2394",
     /** Digits only, E.164. Must match `display`. */
-    e164: "+15555550100",
+    e164: "+13144352394",
   },
   /** TODO: set to null if there is no separate emergency line. */
   emergencyPhone: null as { display: string; e164: string } | null,
-  email: "info@hvacheatingcooling.com",
+  email: "northshvac@gmail.com",
 
   address: {
     /** TODO: replace with the real street address (or leave `showAddress` false). */
@@ -214,7 +219,7 @@ export const PLACEHOLDER_FIELDS: string[] = [
   "business.legalName — confirm the registered entity name and suffix",
   "business.tagline / description",
   "business.foundedYear",
-  "business.phone — (555) 555-0100 is a reserved fictional number, nobody can call it",
+  "business.address — city/state still say Phoenix, AZ, but the phone number on the business card is a 314 (St. Louis, MO) line. One of the two is wrong, and it decides the service areas, the timezone and every local search result.",
   "business.address (street, postalCode, mapUrl, mapEmbedUrl)",
   "business.responseTime (only promise what the office actually hits)",
   "business.emergency.available247 — the brand board claims 24/7, confirm before saying it",

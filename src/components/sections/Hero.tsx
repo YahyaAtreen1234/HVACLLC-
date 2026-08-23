@@ -81,8 +81,11 @@ export async function Hero() {
             <div className="relative px-4 py-6 sm:px-8 lg:px-10 lg:py-10">
               <MediaFrame
                 image={{
-                  src: "",
-                  alt: "Outdoor condensing unit installed beside a Phoenix home",
+                  // Save the equipment photograph as public/brand/hero.jpg —
+                  // the photo only, not the banner with text baked into it.
+                  // See public/brand/README.md for why.
+                  src: "/brand/hero.jpg",
+                  alt: `Condensing unit and air handler installed by ${business.name}`,
                   width: 1200,
                   height: 900,
                 }}

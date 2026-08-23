@@ -25,7 +25,8 @@ export async function Footer() {
         <div className="grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-10">
           {/* Identity */}
           <div>
-            <Logo tone="dark" />
+            {/* `plate` because the logo's navy half is invisible on the navy footer. */}
+            <Logo tone="dark" plate />
             <p className="mt-5 max-w-sm text-sm leading-relaxed">
               {business.description}
             </p>
