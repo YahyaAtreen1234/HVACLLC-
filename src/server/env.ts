@@ -56,7 +56,7 @@ export const env = {
    * ⚠️ Changing this invalidates all existing sessions.
    * Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    */
-  adminSessionSecret: process.env.ADMIN_SESSION_SECRET ?? "",
+  adminSessionSecret: (process.env.ADMIN_SESSION_SECRET ?? "").trim(),
 
   /**
    * Admin username for the browser panel (a single shared login, not
@@ -71,7 +71,17 @@ export const env = {
    * ⚠️ This object is evaluated once when the module first loads, so editing
    * .env.local has no effect until the server restarts.
    */
-  adminPasswordHash: process.env.ADMIN_PASSWORD_HASH ?? "",
+  /*
+   * Trimmed at the boundary rather than at each use.
+   *
+   * A *leading* space or newline is the damaging case: it becomes part of the
+   * salt, so scrypt derives a different key and every password is rejected
+   * while the value still looks present — a login that cannot be fixed by
+   * retyping the password, with nothing to suggest the stored value is at
+   * fault. (A trailing newline happens to survive, because hex decoding stops
+   * at it having already read all 128 valid characters. Not worth relying on.)
+   */
+  adminPasswordHash: (process.env.ADMIN_PASSWORD_HASH ?? "").trim(),
 
   isProduction: process.env.NODE_ENV === "production",
 } as const;

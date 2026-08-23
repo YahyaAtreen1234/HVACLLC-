@@ -71,8 +71,85 @@ export function sessionCookieOptions() {
   };
 }
 
+/**
+ * A stored hash is `salt:hash` — 32 hex characters, a colon, then 128.
+ * Checking the shape matters because a value that arrives mangled (wrapped in
+ * quotes by a shell, truncated on paste, carrying a stray newline) otherwise
+ * looks configured and simply rejects every password forever, with nothing to
+ * suggest the value rather than the password is at fault.
+ */
+const HASH_SHAPE = /^[0-9a-f]{32}:[0-9a-f]{128}$/i;
+
 export function isAdminConfigured(): boolean {
-  return Boolean(env.adminPasswordHash);
+  return HASH_SHAPE.test(env.adminPasswordHash.trim());
+}
+
+export interface EnvCheck {
+  key: string;
+  ok: boolean;
+  detail: string;
+}
+
+/**
+ * What the running server can actually see, for each variable sign-in needs.
+ *
+ * Reports presence, length and shape — never any part of a value. The point is
+ * to distinguish "the variable never arrived" from "it arrived damaged", which
+ * look identical from the outside and have completely different fixes.
+ */
+export function adminEnvReport(): { checks: EnvCheck[]; context: string[] } {
+  const raw = process.env.ADMIN_PASSWORD_HASH ?? "";
+  const hash = raw.trim();
+
+  let hashDetail: string;
+  let hashOk = false;
+
+  if (!raw) {
+    hashDetail = "not set — this variable did not reach this deployment";
+  } else if (HASH_SHAPE.test(hash)) {
+    hashOk = true;
+    hashDetail = `looks correct (${hash.length} characters)`;
+  } else if (/^["'].*["']$/.test(hash)) {
+    hashDetail = "wrapped in quotation marks — paste the value without them";
+  } else if (!hash.includes(":")) {
+    hashDetail = `${hash.length} characters and no colon — this is not a full hash, it looks truncated`;
+  } else {
+    hashDetail = `${hash.length} characters — expected 161 (32, a colon, then 128)`;
+  }
+
+  const username = process.env.ADMIN_USERNAME ?? "";
+  const secret = process.env.ADMIN_SESSION_SECRET ?? "";
+
+  const checks: EnvCheck[] = [
+    { key: "ADMIN_PASSWORD_HASH", ok: hashOk, detail: hashDetail },
+    {
+      key: "ADMIN_USERNAME",
+      ok: Boolean(username.trim()),
+      detail: username.trim()
+        ? `set (${username.trim().length} characters)`
+        : "not set — defaults to \"admin\"",
+    },
+    {
+      key: "ADMIN_SESSION_SECRET",
+      ok: secret.trim().length >= 32,
+      detail: !secret.trim()
+        ? "not set — sessions cannot survive across serverless instances"
+        : secret.trim().length < 32
+          ? `only ${secret.trim().length} characters — 64 expected`
+          : `set (${secret.trim().length} characters)`,
+    },
+  ];
+
+  // Which deployment this is. A variable saved for Production only leaves
+  // preview builds exactly like this, and the two are easy to confuse.
+  const context: string[] = [];
+  const target = process.env.VERCEL_ENV;
+  if (target) context.push(`Deployment environment: ${target}`);
+
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA;
+  if (sha) context.push(`Built from commit: ${sha.slice(0, 7)}`);
+
+  return { checks, context };
 }
 
 /**

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { isLoggedIn } from "@/server/admin/session";
 import {
   adminConfigWarnings,
+  adminEnvReport,
   adminSetupHint,
   isAdminConfigured,
 } from "@/server/admin/auth";
@@ -18,6 +19,7 @@ export default async function LoginPage() {
   // never configured.
   const configured = isAdminConfigured();
   const warnings = adminConfigWarnings();
+  const report = adminEnvReport();
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-ink-950 px-5 py-12">
@@ -46,6 +48,34 @@ export default async function LoginPage() {
               Sign-in is not set up yet
             </p>
             <p className="mt-2">{adminSetupHint()}</p>
+
+            {/*
+              What the server actually sees. Shapes and lengths only, never any
+              part of a value — enough to tell "the variable never arrived"
+              apart from "it arrived damaged", which look identical from the
+              outside and need completely different fixes.
+            */}
+            <ul className="mt-4 space-y-2 border-t border-amber-400/20 pt-4">
+              {report.checks.map((check) => (
+                <li key={check.key} className="flex gap-2.5">
+                  <span aria-hidden="true" className="mt-0.5 shrink-0 font-bold">
+                    {check.ok ? "✓" : "✗"}
+                  </span>
+                  <span>
+                    <code className="font-semibold">{check.key}</code>
+                    <span className="block text-amber-200/80">
+                      {check.detail}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {report.context.length ? (
+              <p className="mt-4 border-t border-amber-400/20 pt-4 text-amber-200/70">
+                {report.context.join(" · ")}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
