@@ -25,6 +25,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seen = new Set<string>();
   const staticPages = [...mainNav, ...companyNav, ...legalNav]
     .filter((item) => {
+      // Anchors are positions within a page, not pages. "/about#team" and
+      // "/about" are one URL to a crawler, so listing both is a duplicate.
+      if (item.href.includes("#")) return false;
+
       if (seen.has(item.href)) return false;
       seen.add(item.href);
       // Careers is noindex while there are no openings; advertising it here

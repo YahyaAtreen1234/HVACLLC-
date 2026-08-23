@@ -9,10 +9,20 @@ import type { TeamMember } from "@/types";
  *
  * For each member:
  *   1. Replace `name`, `role` and `bio` with the real details.
- *   2. Drop a photo into /public/images/team/ and set `image.src`.
+ *   2. Drop a square photo into /public/images/team/ named
+ *      `team-first-last.jpg` (lower case, hyphenated) and point `image.src`
+ *      at it. See the README in that folder for sizing.
  *   3. Add `credentials` only for certifications the person actually holds
  *      (e.g. "NATE-certified", "EPA 608 Universal"). Leave it off otherwise.
  *   4. Set `isPlaceholder: false`.
+ *
+ * Until a photo exists the card shows the person's initials on a brand colour,
+ * so the section never looks broken while you are still gathering them.
+ *
+ * This file is only the *seed*. Once the site has run once, the team lives in
+ * the database and is edited at /admin/team — including photo uploads, with no
+ * file editing and no redeploy. Changing this file afterwards has no effect on
+ * a site that has already seeded.
  *
  * Delete any member you do not have — three cards is a layout choice, not a
  * requirement. The grid handles 1, 2, 3 or more.

@@ -41,6 +41,14 @@ export const mainNav: NavItem[] = [
  * they matter for SEO and for the minority who go looking.
  */
 export const companyNav: NavItem[] = [
+  /*
+   * Points at the section on the About page rather than a page of its own.
+   * A separate /team page would be thin — a handful of cards — and thin pages
+   * compete with the page they were split from. The header already links to
+   * About, so a second header entry would lead to the same place twice; it
+   * belongs here, where the secondary links live.
+   */
+  { label: "Meet the Team", href: "/about#team" },
   { label: "Maintenance Plans", href: "/maintenance-plans" },
   { label: "Financing", href: "/financing" },
   { label: "FAQs", href: "/faqs" },

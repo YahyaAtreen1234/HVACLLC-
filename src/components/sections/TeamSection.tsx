@@ -1,6 +1,7 @@
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MediaFrame } from "@/components/ui/MediaFrame";
+import { Avatar } from "@/components/ui/Avatar";
 import { Alert } from "@/components/ui/Alert";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
@@ -44,13 +45,23 @@ export async function TeamSection({
           {team.map((member, index) => (
             <Reveal as="li" key={member.role} delay={index * 70}>
               <article className="group h-full overflow-hidden rounded-2xl border border-ink-900/8 bg-white shadow-card transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0">
-                <MediaFrame
-                  image={member.image}
-                  icon="shield"
-                  aspect="1/1"
-                  sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
-                  className="rounded-none"
-                />
+                {/*
+                  Initials on a brand colour until a photo exists. MediaFrame's
+                  generic placeholder states the shot a page needs, which is
+                  right for equipment but wrong here — an empty grey box where a
+                  face belongs undercuts the one thing this section is for.
+                */}
+                {member.image.src ? (
+                  <MediaFrame
+                    image={member.image}
+                    icon="shield"
+                    aspect="1/1"
+                    sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
+                    className="rounded-none"
+                  />
+                ) : (
+                  <Avatar name={member.name} />
+                )}
 
                 <div className="p-6">
                   <h3 className="text-xl text-ink-950">{member.name}</h3>
