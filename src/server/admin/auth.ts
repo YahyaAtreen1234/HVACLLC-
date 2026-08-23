@@ -140,14 +140,25 @@ export function adminEnvReport(): { checks: EnvCheck[]; context: string[] } {
     },
   ];
 
-  // Which deployment this is. A variable saved for Production only leaves
-  // preview builds exactly like this, and the two are easy to confuse.
   const context: string[] = [];
   const target = process.env.VERCEL_ENV;
   if (target) context.push(`Deployment environment: ${target}`);
 
   const sha = process.env.VERCEL_GIT_COMMIT_SHA;
   if (sha) context.push(`Built from commit: ${sha.slice(0, 7)}`);
+
+  // Preview plus nothing set is the combination worth naming. Hosting
+  // dashboards scope each variable to chosen environments, and saving one for
+  // Production alone leaves every preview URL looking exactly like this —
+  // which reads as "it did not save" rather than "it saved somewhere else".
+  const nothingArrived = checks.every((check) => !check.ok);
+  if (target === "preview" && nothingArrived) {
+    context.push(
+      "This is a preview URL — the one with a random suffix. Variables saved " +
+        "only for Production never appear here. Tick Production, Preview and " +
+        "Development when saving them, or test on the production domain instead.",
+    );
+  }
 
   return { checks, context };
 }

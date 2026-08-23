@@ -72,9 +72,11 @@ export default async function LoginPage() {
             </ul>
 
             {report.context.length ? (
-              <p className="mt-4 border-t border-amber-400/20 pt-4 text-amber-200/70">
-                {report.context.join(" · ")}
-              </p>
+              <div className="mt-4 space-y-2 border-t border-amber-400/20 pt-4 text-amber-200/70">
+                {report.context.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
             ) : null}
           </div>
         ) : null}
