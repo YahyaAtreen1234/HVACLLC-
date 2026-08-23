@@ -8,7 +8,7 @@
  * anywhere — it only reformats what is already on this machine.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const FILE = process.argv[2] ?? ".env.local";
 
@@ -56,25 +56,43 @@ if (missing.length === NEEDED.length) {
   process.exit(1);
 }
 
+/**
+ * Written to a file as well as printed.
+ *
+ * Vercel's environment page has an "Import .env" button, and pointing it at a
+ * file avoids copying altogether — which matters because a selection that
+ * catches one stray character makes the whole paste fail with a complaint
+ * about invalid characters in the variable *name*, giving no clue that the
+ * problem is the copy rather than the value.
+ */
+const OUT_FILE = ".env.vercel";
+
+const block = NEEDED.map(({ key }) => `${key}=${values.get(key) ?? ""}`).join(
+  "\n",
+);
+
+writeFileSync(OUT_FILE, `${block}\n`);
+
 console.log(`
-  Paste this into your host's environment variables
-  ─────────────────────────────────────────────────
-  Vercel: Settings -> Environment Variables -> paste into the key field;
-  it accepts a whole .env block at once.
+  Two ways to get these into Vercel
+  ─────────────────────────────────
 
-  Tick Production, Preview AND Development. A variable set only for
-  Production leaves preview URLs — the ones with a random suffix, which is
-  what you get from a branch deploy — still broken.
+  Easiest — no copying:
+    Settings -> Environment Variables -> "Import .env"
+    Choose the file just written:  ${OUT_FILE}
 
-  Then redeploy. Variables do not reach a build that already happened.
+  Or copy the three lines below. Select from the first character of
+  ADMIN_USERNAME to the end of the last line and nothing else — no leading
+  spaces, no blank line above.
+
+  Either way: tick Production, Preview AND Development, then redeploy.
+  Variables do not reach a build that already happened.
 `);
 
-console.log("  ┌─────────────────────────────────────────────────────────");
-for (const { key } of NEEDED) {
-  const value = values.get(key);
-  console.log(`  │ ${key}=${value ?? "  *** MISSING — run npm run admin:setup ***"}`);
-}
-console.log("  └─────────────────────────────────────────────────────────\n");
+// Printed flush to the left margin and undecorated, so an over-eager selection
+// picks up nothing that Vercel would reject as part of a variable name.
+console.log(block);
+console.log("");
 
 if (missing.length) {
   console.log("  Missing, and why each matters:");
@@ -83,6 +101,8 @@ if (missing.length) {
 }
 
 console.log(
-  `  Keep these off screen-shares and out of chat: ADMIN_SESSION_SECRET can\n` +
+  `  ${OUT_FILE} holds live secrets. It is git-ignored, and worth deleting\n` +
+    `  once Vercel has them:  del ${OUT_FILE}\n\n` +
+    `  Keep these off screen-shares and out of chat: ADMIN_SESSION_SECRET can\n` +
     `  mint a valid session cookie for anyone holding it.\n`,
 );
