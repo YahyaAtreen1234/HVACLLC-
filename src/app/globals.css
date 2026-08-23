@@ -11,30 +11,34 @@
     sans-serif;
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand: deep service-van navy -------------------------------------- */
-  --color-ink-50: #f2f6fa;
-  --color-ink-100: #e2ebf3;
-  --color-ink-200: #c3d5e5;
-  --color-ink-300: #92b2cd;
-  --color-ink-400: #5b88ac;
-  --color-ink-500: #386a91;
-  --color-ink-600: #285478;
-  --color-ink-700: #1d4361;
-  --color-ink-800: #142f45;
-  --color-ink-900: #0c1e2e;
-  --color-ink-950: #061220;
+  /* ------------------------------------------------------------------ */
+  /* Brand navy — sampled from the logo (#001838), not eyeballed.        */
+  /* Regenerate with `npm run brand:colors` if the logo is ever redrawn. */
+  /* ------------------------------------------------------------------ */
+  --color-ink-50: #f7f8f9;
+  --color-ink-100: #edeff1;
+  --color-ink-200: #d9dce1;
+  --color-ink-300: #b8bec7;
+  --color-ink-400: #8f99a7;
+  --color-ink-500: #707e90;
+  --color-ink-600: #57677c;
+  --color-ink-700: #3d4f68;
+  --color-ink-800: #243854;
+  --color-ink-900: #001838;
+  --color-ink-950: #001128;
 
-  /* Heat: primary action colour --------------------------------------- */
-  --color-flame-50: #fff4ed;
-  --color-flame-100: #ffe5d4;
-  --color-flame-200: #ffc7a8;
-  --color-flame-300: #ffa070;
-  --color-flame-400: #fd7136;
-  --color-flame-500: #f4581f;
-  --color-flame-600: #d93f0c;
-  --color-flame-700: #b42f0c;
-  --color-flame-800: #902811;
-  --color-flame-900: #742411;
+  /* Brand orange — sampled from the logo (#f85000). Primary action. */
+  --color-flame-50: #fff5f0;
+  --color-flame-100: #fee7db;
+  --color-flame-200: #fdcbb3;
+  --color-flame-300: #fca880;
+  --color-flame-400: #fa7e42;
+  --color-flame-500: #f85000;
+  --color-flame-600: #d04300;
+  --color-flame-700: #a93600;
+  --color-flame-800: #812a00;
+  --color-flame-900: #5e1e00;
+  --color-flame-950: #401500;
 
   /* Cool: cooling / accent -------------------------------------------- */
   --color-chill-100: #d7f1fb;

@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { business } from "@/config/business";
+import { publicAsset } from "@/lib/public-asset";
 import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
 
 /**
@@ -83,8 +84,9 @@ export async function Hero() {
                 image={{
                   // Save the equipment photograph as public/brand/hero.jpg —
                   // the photo only, not the banner with text baked into it.
-                  // See public/brand/README.md for why.
-                  src: "/brand/hero.jpg",
+                  // Until it exists this resolves to "" and MediaFrame draws
+                  // its placeholder rather than a broken image.
+                  src: publicAsset("/brand/hero.jpg"),
                   alt: `Condensing unit and air handler installed by ${business.name}`,
                   width: 1200,
                   height: 900,
