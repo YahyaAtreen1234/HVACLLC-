@@ -1,4 +1,5 @@
 import { deleteArea, saveArea } from "../../actions";
+import { FormShell } from "../../FormShell";
 import { Card, Checkbox, Field, SubmitRow, TextArea } from "../../ui";
 import type { DbServiceArea } from "@/server/content/store";
 
@@ -6,7 +7,7 @@ export function AreaForm({ area }: { area?: DbServiceArea }) {
   const editing = Boolean(area);
 
   return (
-    <form action={saveArea} className="space-y-6">
+    <FormShell action={saveArea} className="space-y-6">
       {area ? <input type="hidden" name="id" value={area.id} /> : null}
 
       <Card className="space-y-5">
@@ -76,7 +77,7 @@ export function AreaForm({ area }: { area?: DbServiceArea }) {
         cancelHref="/admin/areas"
         label={editing ? "Save changes" : "Add area"}
       />
-    </form>
+    </FormShell>
   );
 }
 

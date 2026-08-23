@@ -1,4 +1,5 @@
 import { deleteService, saveService } from "../../actions";
+import { FormShell } from "../../FormShell";
 import {
   Card,
   Checkbox,
@@ -28,7 +29,7 @@ export function ServiceForm({ service }: { service?: DbService }) {
   const editing = Boolean(service);
 
   return (
-    <form action={saveService} encType="multipart/form-data" className="space-y-6">
+    <FormShell action={saveService} className="space-y-6">
       {service ? <input type="hidden" name="id" value={service.id} /> : null}
 
       <Card className="space-y-5">
@@ -164,7 +165,7 @@ export function ServiceForm({ service }: { service?: DbService }) {
         cancelHref="/admin/services"
         label={editing ? "Save changes" : "Create service"}
       />
-    </form>
+    </FormShell>
   );
 }
 

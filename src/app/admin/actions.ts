@@ -57,6 +57,25 @@ export interface LoginState {
   error: string | null;
 }
 
+/**
+ * What a save reports back to its form.
+ *
+ * Failures are returned rather than thrown. A thrown error inside a server
+ * action becomes Next's generic error screen, which loses the specific reason
+ * — an upload rejected for being the wrong format, or for having nowhere to be
+ * written — and discards everything typed into the form on the way. Neither is
+ * recoverable by the person who then has to type it all again.
+ */
+export interface SaveState {
+  error: string | null;
+}
+
+/** Turns a thrown value into something worth reading. */
+function asMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  return "Something went wrong while saving. Please try again.";
+}
+
 export async function login(
   _prev: LoginState,
   formData: FormData,
@@ -182,16 +201,28 @@ async function serviceFromForm(form: FormData): Promise<ServiceInput> {
   };
 }
 
-export async function saveService(formData: FormData): Promise<void> {
+export async function saveService(
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = await serviceFromForm(formData);
 
-  if (id) await servicesStore.update(id, input);
-  else await servicesStore.create(input);
+  // The redirect sits outside the try on purpose: Next signals a redirect by
+  // throwing, so catching it here would swallow the navigation and report a
+  // successful save as an error.
+  try {
+    const input = await serviceFromForm(formData);
 
-  refreshPublicPages();
+    if (id) await servicesStore.update(id, input);
+    else await servicesStore.create(input);
+
+    refreshPublicPages();
+  } catch (error) {
+    return { error: asMessage(error) };
+  }
+
   redirect("/admin/services");
 }
 
@@ -219,16 +250,28 @@ async function teamFromForm(form: FormData): Promise<TeamMemberInput> {
   };
 }
 
-export async function saveTeamMember(formData: FormData): Promise<void> {
+export async function saveTeamMember(
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = await teamFromForm(formData);
 
-  if (id) await teamStore.update(id, input);
-  else await teamStore.create(input);
+  // The redirect sits outside the try on purpose: Next signals a redirect by
+  // throwing, so catching it here would swallow the navigation and report a
+  // successful save as an error.
+  try {
+    const input = await teamFromForm(formData);
 
-  refreshPublicPages();
+    if (id) await teamStore.update(id, input);
+    else await teamStore.create(input);
+
+    refreshPublicPages();
+  } catch (error) {
+    return { error: asMessage(error) };
+  }
+
   redirect("/admin/team");
 }
 
@@ -253,16 +296,28 @@ function faqFromForm(form: FormData): FaqInput {
   };
 }
 
-export async function saveFaq(formData: FormData): Promise<void> {
+export async function saveFaq(
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = faqFromForm(formData);
 
-  if (id) await faqsStore.update(id, input);
-  else await faqsStore.create(input);
+  // The redirect sits outside the try on purpose: Next signals a redirect by
+  // throwing, so catching it here would swallow the navigation and report a
+  // successful save as an error.
+  try {
+    const input = faqFromForm(formData);
 
-  refreshPublicPages();
+    if (id) await faqsStore.update(id, input);
+    else await faqsStore.create(input);
+
+    refreshPublicPages();
+  } catch (error) {
+    return { error: asMessage(error) };
+  }
+
   redirect("/admin/faqs");
 }
 
@@ -291,16 +346,28 @@ function areaFromForm(form: FormData): ServiceAreaInput {
   };
 }
 
-export async function saveArea(formData: FormData): Promise<void> {
+export async function saveArea(
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
   await requireSession();
 
   const id = text(formData, "id");
-  const input = areaFromForm(formData);
 
-  if (id) await areasStore.update(id, input);
-  else await areasStore.create(input);
+  // The redirect sits outside the try on purpose: Next signals a redirect by
+  // throwing, so catching it here would swallow the navigation and report a
+  // successful save as an error.
+  try {
+    const input = areaFromForm(formData);
 
-  refreshPublicPages();
+    if (id) await areasStore.update(id, input);
+    else await areasStore.create(input);
+
+    refreshPublicPages();
+  } catch (error) {
+    return { error: asMessage(error) };
+  }
+
   redirect("/admin/areas");
 }
 

@@ -1,4 +1,5 @@
 import { deleteFaq, saveFaq } from "../../actions";
+import { FormShell } from "../../FormShell";
 import { Card, Checkbox, Field, Select, SubmitRow, TextArea } from "../../ui";
 import type { DbFaq } from "@/server/content/store";
 
@@ -8,7 +9,7 @@ export function FaqForm({ faq }: { faq?: DbFaq }) {
   const editing = Boolean(faq);
 
   return (
-    <form action={saveFaq} className="space-y-6">
+    <FormShell action={saveFaq} className="space-y-6">
       {faq ? <input type="hidden" name="id" value={faq.id} /> : null}
 
       <Card className="space-y-5">
@@ -59,7 +60,7 @@ export function FaqForm({ faq }: { faq?: DbFaq }) {
         cancelHref="/admin/faqs"
         label={editing ? "Save changes" : "Add question"}
       />
-    </form>
+    </FormShell>
   );
 }
 

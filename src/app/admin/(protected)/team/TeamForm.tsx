@@ -1,4 +1,5 @@
 import { deleteTeamMember, saveTeamMember } from "../../actions";
+import { FormShell } from "../../FormShell";
 import { Card, Checkbox, Field, SubmitRow, TextArea } from "../../ui";
 import type { DbTeamMember } from "@/server/content/store";
 import { ImageField } from "../../ImageField";
@@ -7,7 +8,7 @@ export function TeamForm({ member }: { member?: DbTeamMember }) {
   const editing = Boolean(member);
 
   return (
-    <form action={saveTeamMember} encType="multipart/form-data" className="space-y-6">
+    <FormShell action={saveTeamMember} className="space-y-6">
       {member ? <input type="hidden" name="id" value={member.id} /> : null}
 
       <Card className="space-y-5">
@@ -84,7 +85,7 @@ export function TeamForm({ member }: { member?: DbTeamMember }) {
         cancelHref="/admin/team"
         label={editing ? "Save changes" : "Add member"}
       />
-    </form>
+    </FormShell>
   );
 }
 
