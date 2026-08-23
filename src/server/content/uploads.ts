@@ -13,11 +13,22 @@ import { env } from "../env";
  * production — it would appear to work in `next dev` and then 404 on the live
  * site, which is the worst kind of bug: invisible until a customer sees it.
  *
- * So uploads live next to the SQLite database instead and are served by a
- * route handler (`src/app/uploads/[...path]/route.ts`). That gives them the
- * same persistence story as the leads database, which is already documented:
- * fine on a VPS or container with a mounted volume, needs object storage
- * (S3/R2/Blob) on a host with an ephemeral filesystem.
+ * ## Two places a file can go
+ *
+ * **Vercel Blob**, whenever `BLOB_READ_WRITE_TOKEN` is set. Serverless hosts
+ * give each request a read-only filesystem, so writing a file there fails
+ * outright — and even if it succeeded, the next request would land on a
+ * different instance that has never seen it. Object storage is the only thing
+ * that actually persists.
+ *
+ * **The local filesystem** otherwise, served by `src/app/uploads/[...path]`.
+ * That keeps development working with no account or token, and is also correct
+ * on a container host with a mounted volume.
+ *
+ * Which one is in use is decided by the token being present, not by a build
+ * flag, so the same image can be uploaded locally and in production without
+ * any code change. Validation is identical either way — the branch is only
+ * about where the bytes land.
  */
 
 /**
@@ -122,6 +133,35 @@ export async function saveUpload(
   }
 
   const name = `${randomUUID()}${match.ext}`;
+
+  if (env.blobToken) {
+    try {
+      // Imported here rather than at module scope so a filesystem deployment
+      // never loads the client, and never needs the package resolved at all.
+      const { put } = await import("@vercel/blob");
+
+      // Buffer rather than the Uint8Array used for signature sniffing: the
+      // blob client accepts Buffer, Blob, File or a stream, not a bare view.
+      const { url } = await put(`${folder}/${name}`, Buffer.from(bytes), {
+        access: "public",
+        contentType: match.mime,
+        token: env.blobToken,
+        // The name is already a UUID; a second random suffix would only make
+        // the stored URL harder to match against the record.
+        addRandomSuffix: false,
+      });
+
+      return { ok: true, path: url };
+    } catch (error) {
+      return {
+        ok: false,
+        error: `The image could not be uploaded to blob storage. ${
+          error instanceof Error ? error.message : "Unknown error."
+        }`,
+      };
+    }
+  }
+
   const dir = join(/*turbopackIgnore: true*/ uploadsDir(), folder);
 
   try {
@@ -130,7 +170,10 @@ export async function saveUpload(
   } catch {
     return {
       ok: false,
-      error: "The image could not be saved on the server. Check disk space.",
+      error:
+        "The image could not be written to disk. On a serverless host this is " +
+        "expected — the filesystem is read-only. Create a Blob store and set " +
+        "BLOB_READ_WRITE_TOKEN, and uploads will go there instead.",
     };
   }
 

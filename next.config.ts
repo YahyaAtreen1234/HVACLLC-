@@ -18,6 +18,23 @@ const nextConfig: NextConfig = {
    * node_modules instead.
    */
   serverExternalPackages: ["pg"],
+
+  images: {
+    /**
+     * Uploaded photos are served from Vercel Blob, on a per-store subdomain.
+     *
+     * `next/image` refuses any remote host that is not listed here, so without
+     * this an upload would succeed, the URL would be stored correctly, and the
+     * picture would still not appear — the hardest kind of fault to place,
+     * because every part looks right except the last one.
+     */
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

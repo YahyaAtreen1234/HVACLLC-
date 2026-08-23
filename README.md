@@ -230,10 +230,13 @@ Two things follow from content living in a database the owner edits at runtime:
 - **The build does not need the database.** Nothing is pre-rendered from it, so
   a deploy cannot fail because the database was briefly unreachable.
 
-⚠️ **Uploaded photos are still files, not database rows.** They need a mounted
-disk, and they do *not* work on serverless hosting, where the filesystem is
-read-only. Everything else does. Moving uploads to object storage (S3, R2,
-Vercel Blob) is what would close that last gap.
+Uploaded photos go to **Vercel Blob** when `BLOB_READ_WRITE_TOKEN` is set, and
+to the local filesystem otherwise. The token's presence is what decides, so the
+same code runs in development and in production.
+
+That branch is not optional on serverless: those filesystems are read-only, so
+without a Blob store every upload fails at the write and no photo reaches a
+customer.
 
 ### Privacy
 
@@ -251,8 +254,8 @@ the one thing serverless hosting cannot provide.
 
 | Host | Site, form, admin panel | Photo uploads |
 | --- | --- | --- |
+| Vercel, Netlify | ✅ | ✅ with a Blob store connected |
 | Render, Railway, Fly.io, VPS | ✅ | ✅ with a disk at `/data` |
-| Vercel, Netlify | ✅ | ❌ read-only filesystem |
 
 Two variables matter:
 

@@ -30,8 +30,20 @@ export const env = {
    *
    * Deliberately not inside `public/` — Next snapshots that directory at build
    * time, so runtime writes there are never served in production.
+   *
+   * Used only when BLOB_READ_WRITE_TOKEN is absent.
    */
   uploadsPath: process.env.UPLOADS_PATH ?? ".data/uploads",
+
+  /**
+   * Vercel Blob token, set automatically when a Blob store is connected to the
+   * project.
+   *
+   * Its presence is what switches uploads from the local filesystem to object
+   * storage. Serverless hosts have a read-only filesystem, so without this an
+   * upload fails at the write and the photo never reaches a customer.
+   */
+  blobToken: process.env.BLOB_READ_WRITE_TOKEN ?? "",
 
   /** Optional outbound webhook (Zapier/Make/CRM). */
   webhookUrl: process.env.SERVICE_REQUEST_WEBHOOK_URL ?? "",
@@ -104,6 +116,15 @@ export function configurationWarnings(): string[] {
   if (!env.databaseUrl) {
     warnings.push(
       "DATABASE_URL is not set — the site cannot store leads or serve editable content.",
+    );
+  }
+
+  // Vercel's filesystem is read-only, so without blob storage every photo
+  // upload fails at the write. Worth reporting here rather than leaving it to
+  // be discovered by someone trying to add a team member.
+  if (process.env.VERCEL && !env.blobToken) {
+    warnings.push(
+      "BLOB_READ_WRITE_TOKEN is not set — photo uploads will fail, because this host's filesystem is read-only. Connect a Blob store to the project.",
     );
   }
 
