@@ -1,7 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { business } from "@/config/business";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "./LogoMark";
+
+export { LogoMark };
 
 /**
  * Logo mark + wordmark.
@@ -17,26 +19,6 @@ import { cn } from "@/lib/utils";
  */
 
 const LOGO_SRC = "/brand/logo.png";
-
-export function LogoMark({
-  size = 44,
-  className,
-}: {
-  size?: number;
-  className?: string;
-}) {
-  return (
-    <Image
-      src={LOGO_SRC}
-      alt=""
-      width={size}
-      height={size}
-      priority
-      className={cn("shrink-0 object-contain", className)}
-      style={{ width: size, height: size }}
-    />
-  );
-}
 
 export function Logo({
   tone = "light",
@@ -71,7 +53,7 @@ export function Logo({
           plate && "rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/5",
         )}
       >
-        <LogoMark size={size} />
+        <LogoMark src={LOGO_SRC} size={size} />
       </span>
 
       {showWordmark ? (
