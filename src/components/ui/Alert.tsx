@@ -47,7 +47,11 @@ export function Alert({
       role={tone === "error" ? "alert" : "status"}
       aria-live={tone === "error" ? "assertive" : "polite"}
       className={cn(
-        "flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed",
+        // Eased in rather than appearing instantly. `animate-rise` is the same
+        // curve the rest of the page uses, and it animates only opacity and
+        // transform, so a validation message appearing cannot shove the fields
+        // below it around mid-read.
+        "animate-rise flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed",
         styles.wrap,
         className,
       )}

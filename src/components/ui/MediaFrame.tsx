@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { FadeImage } from "@/components/ui/FadeImage";
 import { cn } from "@/lib/utils";
 import { Icon } from "./Icon";
 import type { IconName, SiteImage } from "@/types";
@@ -49,7 +49,7 @@ export function MediaFrame({
       )}
     >
       {image.src ? (
-        <Image
+        <FadeImage
           src={image.src}
           alt={image.alt}
           fill

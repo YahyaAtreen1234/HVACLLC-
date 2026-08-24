@@ -1,8 +1,16 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * The focus ring is a `box-shadow` rather than a real outline so it can fade
+ * in with the border colour. It stays a solid, high-contrast ring rather than
+ * a faint glow — a focus indicator is how a keyboard user knows where they
+ * are, so it has to survive being animated, not be softened by it.
+ */
 const CONTROL =
-  "w-full rounded-lg border-2 bg-white px-4 py-3 text-base text-ink-950 transition-colors " +
-  "placeholder:text-ink-400 focus:border-flame-500 focus:outline-none";
+  "w-full rounded-lg border-2 bg-white px-4 py-3 text-base text-ink-950 " +
+  "transition-[border-color,box-shadow] duration-200 ease-out " +
+  "placeholder:text-ink-400 focus:border-flame-600 focus:outline-none " +
+  "focus:shadow-[0_0_0_4px_rgb(238_96_12_/_0.18)]";
 
 const NORMAL = "border-ink-900/12 hover:border-ink-900/25";
 const INVALID = "border-danger-500 bg-danger-50/40";

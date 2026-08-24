@@ -13,14 +13,30 @@ export type ButtonVariant =
   | "emergency";
 export type ButtonSize = "sm" | "md" | "lg";
 
+/**
+ * `active:scale-[0.97]` is the press. It matters more than the hover on a
+ * phone, where there is no hover at all and a tap otherwise gives no
+ * acknowledgement until the next page paints.
+ *
+ * The scale is kept to 1.02 rather than the livelier 1.05: these buttons carry
+ * text, and scaling type resamples it, so a larger jump reads as a moment of
+ * blur rather than as depth.
+ */
 const BASE =
   "relative inline-flex items-center justify-center gap-2.5 rounded-lg font-display font-semibold tracking-tight " +
   "transition-[transform,background-color,border-color,color,box-shadow] duration-200 ease-out " +
-  "hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 " +
-  "motion-reduce:hover:translate-y-0";
+  "hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.97] active:duration-75 " +
+  "disabled:pointer-events-none disabled:opacity-60 " +
+  "motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:active:scale-100";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   // Main conversion action — the only element on a page in flame orange.
+  //
+  // Deliberately without the sheen. Putting it here lit up eight buttons on the
+  // home page at once, which is both a pile of simultaneous compositing work
+  // and self-defeating: a highlight that draws the eye everywhere draws it
+  // nowhere. Add the `sheen` class by hand to the single most important call
+  // to action on a page.
   primary:
     "bg-flame-600 text-white shadow-card hover:bg-flame-700 hover:shadow-card-hover",
   // Sits next to primary on light backgrounds.

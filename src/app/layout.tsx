@@ -85,6 +85,20 @@ export default function RootLayout({
       className={`${archivo.variable} ${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        {/*
+          Scroll-reveal starts elements at zero opacity and JavaScript brings
+          them in. If that script never runs — blocked, failed, still loading
+          on a bad connection — the page would render as a blank column of
+          nothing. This makes the finished state the default whenever scripting
+          is unavailable, so the content is a broken animation at worst rather
+          than an invisible page.
+        */}
+        <noscript>
+          <style>{`.reveal{opacity:1!important;transform:none!important}
+.img-fade{opacity:1!important}`}</style>
+        </noscript>
+      </head>
       <body
         className="flex min-h-full flex-col bg-sand-50"
         suppressHydrationWarning

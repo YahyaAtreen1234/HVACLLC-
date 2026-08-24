@@ -181,11 +181,100 @@
 /* Scroll-reveal: elements start hidden, `data-revealed` is set by <Reveal>. */
 @utility reveal {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(22px);
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 
   &[data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion utilities
+
+   Everything below animates only `opacity` and `transform`. Both are composited
+   on the GPU and neither triggers layout, so a card lifting on hover cannot
+   nudge the rest of the page around — which is what makes an animation pass
+   safe to apply broadly rather than sparingly.
+--------------------------------------------------------------------------- */
+
+/* A photograph fading in once decoded, instead of snapping into place. */
+@utility img-fade {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+
+  &[data-loaded="true"] {
+    opacity: 1;
+  }
+}
+
+/* Contained zoom for a photo inside an `overflow-hidden` frame. */
+@utility zoomable {
+  overflow: hidden;
+
+  & img {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+}
+
+/*
+ * A slow sheen across the primary call to action.
+ *
+ * Deliberately long and low contrast: the job is to catch peripheral vision
+ * once, not to blink for attention. Anything faster reads as a broken GIF, and
+ * repeated flashing is exactly what the vestibular guidance warns against.
+ */
+@utility sheen {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 45%;
+    left: -60%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      rgb(255 255 255 / 0.28),
+      transparent
+    );
+    transform: skewX(-18deg);
+    animation: sheen-sweep 5.5s ease-in-out 2s infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes sheen-sweep {
+  0% {
+    left: -60%;
+  }
+  /* One pass, then a long rest — the pause is most of the cycle. */
+  22%,
+  100% {
+    left: 130%;
+  }
+}
+
+/* Route changes: a short fade so a navigation is not a hard cut. */
+@utility page-enter {
+  animation: page-in 0.35s ease-out both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
     opacity: 1;
     transform: none;
   }
@@ -206,6 +295,29 @@
 
   .reveal {
     opacity: 1;
+    transform: none;
+  }
+
+  /*
+   * The rules above neutralise duration, but an element that starts at
+   * `opacity: 0` and relies on an animation to arrive would simply stay
+   * invisible. These force the finished state instead.
+   */
+  .img-fade {
+    opacity: 1;
+  }
+
+  .page-enter {
+    animation: none;
+  }
+
+  /* A repeating highlight is the clearest case for removing motion outright. */
+  .sheen::after {
+    animation: none;
+    display: none;
+  }
+
+  .zoomable:hover img {
     transform: none;
   }
 }

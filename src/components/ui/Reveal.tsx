@@ -17,12 +17,19 @@ export function Reveal({
   children,
   delay = 0,
   className,
+  id,
   as: Tag = "div",
 }: {
   children: React.ReactNode;
   /** Stagger in milliseconds. */
   delay?: number;
   className?: string;
+  /**
+   * Anchor target. Needed because wrapping an element that already carried an
+   * id would otherwise break links pointing at it — the footer's city links
+   * jump to `/service-areas#phoenix`.
+   */
+  id?: string;
   as?: "div" | "li" | "section" | "article";
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -59,6 +66,7 @@ export function Reveal({
     <Tag
       // @ts-expect-error — one shared ref across the allowed element types.
       ref={ref}
+      id={id}
       data-revealed="false"
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
       className={cn("reveal", className)}

@@ -1,4 +1,5 @@
 import { Header } from "@/components/layout/Header";
+import { RouteTransition } from "@/components/layout/RouteTransition";
 import { Footer } from "@/components/layout/Footer";
 import { MobileCallBar } from "@/components/layout/MobileCallBar";
 import { PlaceholderNotice } from "@/components/dev/PlaceholderNotice";
@@ -51,7 +52,7 @@ export default async function SiteLayout({
 
       {/* Bottom padding clears the sticky mobile call bar. */}
       <main id="main" className="flex-1 pb-20 lg:pb-0">
-        {children}
+        <RouteTransition>{children}</RouteTransition>
       </main>
 
       <Footer />

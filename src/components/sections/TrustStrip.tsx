@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/components/ui/Reveal";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/types";
 import { business } from "@/config/business";
@@ -62,9 +63,11 @@ export function TrustStrip() {
     <section className="border-b border-ink-900/8 bg-white">
       <Container size="wide">
         <ul className="grid divide-y divide-ink-900/8 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-          {items.map((item) => (
-            <li
+          {items.map((item, index) => (
+            <Reveal
+              as="li"
               key={item.title}
+              delay={index * 90}
               className="flex items-center gap-4 px-1 py-6 lg:px-7"
             >
               <span
@@ -81,7 +84,7 @@ export function TrustStrip() {
                   {item.note}
                 </span>
               </span>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Container>

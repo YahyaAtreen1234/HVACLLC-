@@ -28,8 +28,8 @@ export async function Hero() {
       <Container size="wide" className="relative">
         <div className="grid items-center gap-10 py-14 sm:py-16 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:py-20">
           {/* Copy */}
-          <div className="animate-rise relative z-10">
-            <h1 className="font-display text-4xl leading-[1.02] font-bold tracking-tight text-ink-950 uppercase sm:text-5xl lg:text-6xl">
+          <div className="relative z-10">
+            <h1 style={{ animationDelay: "60ms" }} className="animate-rise font-display text-4xl leading-[1.02] font-bold tracking-tight text-ink-950 uppercase sm:text-5xl lg:text-6xl">
               Comfort
               <br />
               you can
@@ -37,15 +37,15 @@ export async function Hero() {
               <span className="text-flame-600">count on</span>
             </h1>
 
-            <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-ink-700">
+            <p style={{ animationDelay: "180ms" }} className="animate-rise mt-6 max-w-md text-[1.05rem] leading-relaxed text-ink-700">
               Professional heating and cooling for homes and businesses in{" "}
               {areaSummary}. {business.tagline}.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div style={{ animationDelay: "300ms" }} className="animate-rise mt-8 flex flex-wrap gap-3">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 rounded-lg bg-flame-600 px-6 py-3.5 font-display text-sm font-semibold tracking-wide text-white uppercase shadow-sm transition-colors hover:bg-flame-700"
+                className="sheen inline-flex items-center gap-2 rounded-lg bg-flame-600 px-6 py-3.5 font-display text-sm font-semibold tracking-wide text-white uppercase shadow-sm transition-colors hover:bg-flame-700"
               >
                 Get a free quote
                 <Icon name="arrow-right" size={16} />

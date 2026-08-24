@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Reveal } from "@/components/ui/Reveal";
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Icon } from "@/components/ui/Icon";
@@ -40,9 +41,15 @@ export async function ServiceAreasSection({
         ) : null}
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(await getServiceAreas()).map((area) => (
-            <li key={area.slug} id={area.slug} className="scroll-mt-32">
-              <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-shadow hover:shadow-card-hover">
+          {(await getServiceAreas()).map((area, index) => (
+            <Reveal
+              as="li"
+              key={area.slug}
+              id={area.slug}
+              delay={index * 80}
+              className="scroll-mt-32"
+            >
+              <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0">
                 <span className="flex items-center gap-2 font-display text-lg font-bold text-ink-950">
                   <Icon name="map-pin" size={18} className="text-flame-600" />
                   <Link
@@ -67,7 +74,7 @@ export async function ServiceAreasSection({
                   <Icon name="arrow-right" size={15} />
                 </span>
               </div>
-            </li>
+            </Reveal>
           ))}
         </ul>
 

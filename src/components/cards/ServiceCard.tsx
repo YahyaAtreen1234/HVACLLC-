@@ -30,7 +30,8 @@ export function ServiceCard({
       <span
         aria-hidden="true"
         className={cn(
-          "flex size-12 items-center justify-center rounded-xl transition-colors duration-300",
+          "flex size-12 items-center justify-center rounded-xl transition-[colors,transform] duration-300 ease-out",
+          "group-hover:scale-110 motion-reduce:group-hover:scale-100",
           service.category === "heating"
             ? "bg-flame-50 text-flame-600 group-hover:bg-flame-700 group-hover:text-white"
             : "bg-chill-100 text-chill-600 group-hover:bg-chill-500 group-hover:text-white",
