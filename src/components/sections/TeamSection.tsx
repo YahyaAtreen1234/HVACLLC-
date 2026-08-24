@@ -5,7 +5,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Alert } from "@/components/ui/Alert";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
-import { getTeam, getTeamIsPlaceholder } from "@/server/content/read";
+import {
+  getServiceAreas,
+  getTeam,
+  getTeamIsPlaceholder,
+} from "@/server/content/read";
 
 /**
  * Team cards.
@@ -23,13 +27,35 @@ export async function TeamSection({
   const team = await getTeam();
   if (!team.length) return null;
 
+  // Named from the service areas rather than written in, so the sentence
+  // follows whatever towns are set in the admin panel instead of going stale
+  // the first time coverage changes. Only confirmed areas count — listing a
+  // town the office does not drive to would be a claim, not a description.
+  const confirmed = (await getServiceAreas()).filter(
+    (area) => !area.isPlaceholder,
+  );
+
+  const where =
+    confirmed.length === 0
+      ? null
+      : confirmed.length === 1
+        ? confirmed[0].city
+        : `${confirmed
+            .slice(0, -1)
+            .map((area) => area.city)
+            .join(", ")} and ${confirmed[confirmed.length - 1].city}`;
+
   return (
     <Section tone={tone} id="team">
       <Container>
         <SectionHeading
           eyebrow="Our team"
           title="Meet our team"
-          lead="Small enough that you will recognise the person on your doorstep, and that they will remember your system next time."
+          lead={
+            where
+              ? `Get to know the people who keep ${where} comfortable year-round — small enough that you will recognise whoever turns up at your door.`
+              : "Small enough that you will recognise the person on your doorstep, and that they will remember your system next time."
+          }
         />
 
         {await getTeamIsPlaceholder() ? (
