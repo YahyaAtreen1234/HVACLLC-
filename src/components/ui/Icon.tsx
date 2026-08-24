@@ -29,6 +29,13 @@ const PATHS: Record<IconName, React.ReactNode> = {
   wrench: (
     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-8l-3.7 3.9Z" />
   ),
+  briefcase: (
+    <>
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+      <path d="M2 13h20" />
+    </>
+  ),
   shield: (
     <>
       <path d="M12 22s8-3.6 8-10V5.2L12 2 4 5.2V12c0 6.4 8 10 8 10Z" />

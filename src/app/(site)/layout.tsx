@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { RouteTransition } from "@/components/layout/RouteTransition";
 import { Footer } from "@/components/layout/Footer";
+import { HiringBanner } from "@/components/sections/HiringBanner";
 import { MobileCallBar } from "@/components/layout/MobileCallBar";
 import { PlaceholderNotice } from "@/components/dev/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -55,6 +56,7 @@ export default async function SiteLayout({
         <RouteTransition>{children}</RouteTransition>
       </main>
 
+      <HiringBanner />
       <Footer />
       <MobileCallBar />
 

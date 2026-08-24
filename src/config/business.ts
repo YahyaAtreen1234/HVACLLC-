@@ -124,6 +124,33 @@ export const business = {
   // ---------------------------------------------------------------------------
   // Emergency service
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Recruiting
+  // ---------------------------------------------------------------------------
+  /**
+   * Drives the hiring banner and the wording on the careers page together, so
+   * the two can never contradict each other — a strip advertising vacancies
+   * above a page saying nobody is being hired is worse than showing neither.
+   *
+   * `active` is about whether applications are welcome at all, which is not the
+   * same as having a role listed: a contractor will nearly always make room for
+   * a good technician without a formal opening. Specific roles live in
+   * `src/data/jobs.ts` and are listed on the careers page when present.
+   *
+   * Set `active: false` and the banner disappears site-wide.
+   */
+  hiring: {
+    active: true,
+    headline: "We're hiring",
+    /**
+     * ⚠️ Only name trades the business actually employs. The site sells no
+     * plumbing work, so advertising plumbing roles would draw applicants for a
+     * job that does not exist here.
+     */
+    note: "Join the team — HVAC service and installation roles.",
+    ctaLabel: "Apply now",
+  },
+
   emergency: {
     /**
      * TODO: confirm the business really does take after-hours emergency calls.

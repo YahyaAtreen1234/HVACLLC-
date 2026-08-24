@@ -6,6 +6,7 @@ export type IconName =
   | "flame"
   | "heat-pump"
   | "wrench"
+  | "briefcase"
   | "shield"
   | "wind"
   | "duct"

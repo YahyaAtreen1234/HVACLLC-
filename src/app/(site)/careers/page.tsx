@@ -16,9 +16,10 @@ export const metadata: Metadata = pageMetadata({
   title: "Careers",
   description: `HVAC technician and installer jobs at ${business.name} in ${business.address.city}, ${business.address.state}.`,
   path: "/careers",
-  // Nothing to index while there are no openings — an empty careers page
-  // ranking for "hvac jobs" only produces applications you cannot act on.
-  index: jobOpenings.length > 0,
+  // Indexed when there is either a listed role or an open invitation to apply.
+  // With both off the page says nobody is being hired, and ranking for "hvac
+  // jobs" would only produce applications nobody can act on.
+  index: jobOpenings.length > 0 || business.hiring.active,
 });
 
 export default function CareersPage() {
@@ -135,12 +136,20 @@ export default function CareersPage() {
           ) : (
             <div className="rounded-2xl border border-ink-900/8 bg-white p-8 text-center shadow-card">
               <h2 className="font-display text-xl font-bold text-ink-950">
-                No open roles right now
+                {business.hiring.active
+                  ? "No specific roles listed right now"
+                  : "No open roles right now"}
               </h2>
+              {/*
+                Worded from the same switch that drives the hiring banner. With
+                recruiting on, a visitor who arrived from that strip must not
+                land on a page telling them nobody is being hired — having no
+                role listed is not the same as not wanting applications.
+              */}
               <p className="mx-auto mt-3 max-w-md leading-relaxed text-ink-600">
-                We are not actively recruiting at the moment. Good technicians
-                are worth making room for, though — send your details and we
-                will keep them on file for when something opens up.
+                {business.hiring.active
+                  ? "We are not advertising a particular vacancy at the moment, but we are always glad to hear from good technicians. Send your details and we will be in touch when something fits."
+                  : "We are not actively recruiting at the moment. Good technicians are worth making room for, though — send your details and we will keep them on file for when something opens up."}
               </p>
               <Link
                 href="/contact?job=general"
@@ -151,10 +160,11 @@ export default function CareersPage() {
               </Link>
 
               <Alert tone="info" className="mt-8 text-left">
-                <strong>Hiring?</strong> Add roles to{" "}
-                <code>src/data/jobs.ts</code>. This page is set to noindex
-                while the list is empty, so it switches on automatically once
-                there is a real opening.
+                <strong>Got a specific vacancy?</strong> Add it to{" "}
+                <code>src/data/jobs.ts</code> and it will be listed here. The
+                green hiring strip and the wording above both follow{" "}
+                <code>business.hiring.active</code> — turn that off and they
+                disappear together, and the page returns to noindex.
               </Alert>
             </div>
           )}
