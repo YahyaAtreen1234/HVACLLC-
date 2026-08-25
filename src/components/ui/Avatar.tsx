@@ -36,6 +36,9 @@ export function Avatar({
   return (
     <div
       className={cn(
+        // Square by default; the caller overrides it to match whatever shape
+        // the real photograph will occupy, so the card does not change height
+        // the moment a photo is added.
         "flex aspect-square w-full items-center justify-center",
         prompt ? "bg-ink-100" : toneFor(name),
         className,

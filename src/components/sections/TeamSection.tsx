@@ -101,16 +101,23 @@ export async function TeamSection({
                   right for equipment but wrong here — an empty grey box where a
                   face belongs undercuts the one thing this section is for.
                 */}
+                {/*
+                  Landscape, not square. Staff photographs on a contractor's
+                  site are people at their desk or beside a van, taken on a
+                  phone held sideways — a square crop takes the top off their
+                  head or half the room. A studio portrait would suit 1:1, and
+                  nobody has those.
+                */}
                 {member.image.src ? (
                   <MediaFrame
                     image={member.image}
                     icon="shield"
-                    aspect="1/1"
+                    aspect="4/3"
                     sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
                     className="rounded-none"
                   />
                 ) : (
-                  <Avatar name={member.name} />
+                  <Avatar name={member.name} className="aspect-4/3" />
                 )}
 
                 <div className="p-6">
