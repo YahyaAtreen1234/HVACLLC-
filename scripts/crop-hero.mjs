@@ -41,48 +41,107 @@ const at = (x, y) => {
   return [data[i], data[i + 1], data[i + 2]];
 };
 
-// A column counts as photographic when it holds mid-tones. Flat artwork — the
-// navy headline, the orange buttons, white space — is saturated or extreme;
-// a photograph of grey metal is neither.
-function isPhotoColumn(x) {
-  let midtones = 0;
-  for (let y = 0; y < height; y += 2) {
-    const [r, g, b] = at(x, y);
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const grey = max - min < 40;
-    const mid = max > 60 && max < 232;
-    if (grey && mid) midtones++;
-  }
-  return midtones > height * 0.12;
-}
-
-let left = width - 1;
-for (let x = width - 1; x >= 0; x--) {
-  if (isPhotoColumn(x)) left = x;
-  else if (left < width - 1 && width - x > width * 0.25) break;
-}
-
-// Trim blank margins around the detected region.
 const isBlank = (x, y) => {
   const [r, g, b] = at(x, y);
   return r > 244 && g > 244 && b > 244;
 };
 
-let top = 0;
-let bottom = height - 1;
-const columnBlank = (y) => {
-  for (let x = left; x < width; x += 2) if (!isBlank(x, y)) return false;
+/*
+ * The gutter between the text and the photograph gives the left edge.
+ *
+ * Judging columns by their content instead — looking for the mid-grey of metal
+ * — cut into the machine: a condenser's fins are near-black, so its leftmost
+ * columns failed the test and the unit lost its side. The blank gap the
+ * designer left is unambiguous, and is the same signal used below to find the
+ * bottom edge.
+ *
+ * Measured over the upper part of the image only, so the badge strip running
+ * the full width underneath cannot fill the gutter in.
+ */
+const upper = Math.round(height * 0.6);
+const columnBlank = (x) => {
+  for (let y = 0; y < upper; y += 2) if (!isBlank(x, y)) return false;
   return true;
 };
-while (top < height && columnBlank(top)) top++;
-while (bottom > top && columnBlank(bottom)) bottom--;
 
-const w = width - left;
+const gutters = [];
+let open = null;
+for (let x = 0; x < width; x++) {
+  if (columnBlank(x)) {
+    if (open === null) open = x;
+  } else if (open !== null) {
+    gutters.push([open, x - 1]);
+    open = null;
+  }
+}
+if (open !== null) gutters.push([open, width - 1]);
+
+// The widest gap that is not the outer margin.
+const interior = gutters.filter(
+  ([a, b]) => a > 0 && b < width - 1 && b - a >= 12,
+);
+interior.sort((p, q) => q[1] - q[0] - (p[1] - p[0]));
+
+const left = interior.length ? interior[0][1] + 1 : 0;
+
+// Trailing margin, so the photo is not letterboxed against empty canvas.
+let right = width - 1;
+while (right > left && columnBlank(right)) right--;
+
+const rowBlank = (y) => {
+  for (let x = left; x <= right; x += 2) if (!isBlank(x, y)) return false;
+  return true;
+};
+
+let top = 0;
+while (top < height && rowBlank(top)) top++;
+
+/*
+ * Cut at the gap below the equipment, not at the last ink on the page.
+ *
+ * These banners carry a row of badges and service icons beneath the
+ * photograph. Trimming to the final non-blank row swept those in — and they
+ * are the very text the page already renders as HTML, so they would appear
+ * twice.
+ *
+ * The equipment and the badges are separated by a band of blank rows, so the
+ * widest such band below the photograph marks the real bottom edge.
+ */
+let lastInk = height - 1;
+while (lastInk > top && rowBlank(lastInk)) lastInk--;
+
+const bands = [];
+let runStart = null;
+for (let y = top; y <= lastInk; y++) {
+  if (rowBlank(y)) {
+    if (runStart === null) runStart = y;
+  } else if (runStart !== null) {
+    bands.push([runStart, y - 1]);
+    runStart = null;
+  }
+}
+
+// Only bands past the halfway mark, and only ones thick enough to be a
+// deliberate gap rather than a light row inside the photograph itself.
+const minGap = Math.round(height * 0.02);
+const separators = bands.filter(
+  ([a, b]) => a > top + (lastInk - top) * 0.45 && b - a >= minGap,
+);
+separators.sort((p, q) => q[1] - q[0] - (p[1] - p[0]));
+
+const bottom = separators.length ? separators[0][0] - 1 : lastInk;
+
+if (separators.length) {
+  console.log(
+    `  gap below photo   y ${separators[0][0]}-${separators[0][1]}  (badges cropped off)`,
+  );
+}
+
+const w = right - left + 1;
 const h = bottom - top + 1;
 
 console.log(`  source            ${width}x${height}`);
-console.log(`  photo begins at   x=${left}  (${Math.round((left / width) * 100)}% across)`);
+console.log(`  photo spans       x ${left}-${right}`);
 console.log(`  vertical extent   y ${top}-${bottom}`);
 console.log(`  extracted         ${w}x${h}`);
 
