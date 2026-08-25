@@ -13,7 +13,8 @@
     "admin:env": "node scripts/admin-env.mjs",
     "brand:colors": "node scripts/brand-colors.mjs",
     "db:check": "node --env-file-if-exists=.env.local scripts/db-check.mjs",
-    "brand:palette": "node scripts/palette.mjs"
+    "brand:palette": "node scripts/palette.mjs",
+    "brand:hero": "node scripts/crop-hero.mjs"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",
