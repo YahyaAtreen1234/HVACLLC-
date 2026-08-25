@@ -44,12 +44,26 @@ export function AreaForm({ area }: { area?: DbServiceArea }) {
         />
 
         <TextArea
-          label="Note"
+          label="What makes this town different"
           name="note"
-          rows={2}
+          rows={4}
           defaultValue={area?.note}
-          hint="Optional. E.g. a travel surcharge or limited coverage."
+          hint="Shown at the top of this town's page, and the only part of it that is not shared with every other town. Write two or three sentences a local would recognise: the age of the housing, a common fault you see here, an estate or district you work in often, how long the drive is. Without this, the page is the same text as every other city with the name swapped — which search engines treat as a doorway page and may penalise."
         />
+
+        {!area?.note?.trim() ? (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+            <strong className="font-display font-bold">
+              No local writing yet
+            </strong>
+            <p className="mt-1">
+              This page currently differs from the other town pages only by the
+              name appearing in it. Fill in the field above before removing the
+              tick below, or the page goes live as one of eight near-identical
+              copies.
+            </p>
+          </div>
+        ) : null}
 
         <Checkbox
           label="Still unconfirmed — keep out of search results"

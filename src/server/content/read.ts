@@ -217,6 +217,7 @@ export async function getServiceAreas(): Promise<ServiceArea[]> {
         city: row.city,
         state: row.state,
         neighborhoods: row.neighborhoods,
+        note: row.note,
         isPlaceholder: row.isPlaceholder,
       })),
     () => fallbackAreas,

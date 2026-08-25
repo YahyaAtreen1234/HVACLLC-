@@ -82,10 +82,22 @@ export async function Hero() {
             <div className="relative px-4 py-6 sm:px-8 lg:px-10 lg:py-10">
               <MediaFrame
                 image={{
-                  // Save the equipment photograph as public/brand/hero.jpg —
-                  // the photo only, not the banner with text baked into it.
-                  // Until it exists this resolves to "" and MediaFrame draws
-                  // its placeholder rather than a broken image.
+                  // TODO: replace with a real hero photograph.
+                  //
+                  //   Save as:  public/brand/hero.jpg
+                  //   Shape:    4:3 landscape (this frame is aspect-4/3)
+                  //   Size:     1600×1200 or larger, under about 500 KB
+                  //   Subject:  finished equipment, a van, or a technician at
+                  //             work — a real job, not a stock photograph
+                  //
+                  // Send the photograph only, never a banner with the headline
+                  // baked into it: text inside an image cannot be read by
+                  // search engines or screen readers and will not reflow on a
+                  // phone. The headline beside this frame is already live text.
+                  //
+                  // Nothing else needs changing. `publicAsset` returns "" while
+                  // the file is absent, and MediaFrame then draws its own
+                  // placeholder rather than a broken image.
                   src: publicAsset("/brand/hero.jpg"),
                   alt: `Condensing unit and air handler installed by ${business.name}`,
                   width: 1200,

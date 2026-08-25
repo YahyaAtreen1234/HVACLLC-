@@ -21,10 +21,28 @@ export default async function TeamAdminPage() {
       {placeholders > 0 ? (
         <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
           <p className="text-sm leading-relaxed text-amber-900">
-            <strong>{placeholders} placeholder{placeholders === 1 ? "" : "s"}</strong>{" "}
-            still showing on your live About page. Replace the names and photos
-            with real people — that page exists to build trust, and invented
-            staff defeats the point of it.
+            <strong>
+              {placeholders} placeholder{placeholders === 1 ? "" : "s"} — hidden
+              from customers
+            </strong>
+            <br />
+            {placeholders === members.length ? (
+              <>
+                Every entry is still a placeholder, so the &ldquo;Meet our
+                team&rdquo; panel does not appear on your site at all. Showing a
+                card reading &ldquo;Add owner&rsquo;s name&rdquo; would answer
+                the one question that section exists to answer — who is coming
+                into my house — in the worst possible way.
+              </>
+            ) : (
+              <>
+                These entries are left out of the &ldquo;Meet our team&rdquo;
+                panel; only the real people appear. Replace a name, role and
+                photo and that person joins the panel immediately.
+              </>
+            )}{" "}
+            An entry counts as a placeholder while its name still begins with
+            &ldquo;Add&rdquo;.
           </p>
         </div>
       ) : null}

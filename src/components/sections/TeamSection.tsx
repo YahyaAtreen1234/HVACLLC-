@@ -24,7 +24,28 @@ export async function TeamSection({
 }: {
   tone?: "light" | "muted";
 }) {
-  const team = await getTeam();
+  const everyone = await getTeam();
+
+  /*
+   * Placeholder people never reach a customer.
+   *
+   * This section exists to answer "who is coming into my house", so a card
+   * reading "Add owner's name" does not merely look unfinished — it answers
+   * that question badly, and a visitor deciding whether to trust a contractor
+   * with their address reads it as a site nobody maintains. Absent beats
+   * unfinished here in a way it would not on, say, a list of services.
+   *
+   * Filtering rather than an all-or-nothing switch means the section appears
+   * the moment the first real person is added, showing only them, and grows as
+   * the rest are filled in. Nothing to remember to turn on.
+   *
+   * In development everyone is shown, along with the notice below, so the work
+   * left to do stays visible to whoever is building the site.
+   */
+  const team = process.env.NODE_ENV === "production"
+    ? everyone.filter((member) => !member.isPlaceholder)
+    : everyone;
+
   if (!team.length) return null;
 
   // Named from the service areas rather than written in, so the sentence

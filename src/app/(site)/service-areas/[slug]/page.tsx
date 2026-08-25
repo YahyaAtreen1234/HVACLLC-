@@ -118,6 +118,22 @@ export default async function ServiceAreaPage({
               <h2 className="text-2xl text-ink-950">
                 What we handle in {area.city}
               </h2>
+              {/*
+                The local note comes first when there is one.
+
+                Every other paragraph on this page is identical across cities
+                with the name swapped in, which is precisely the pattern search
+                engines treat as doorway pages. This is the one place genuinely
+                local writing goes — the older housing stock in one town, the
+                new-build estates in another, a landmark, a common fault. It is
+                edited per city at /admin/areas.
+              */}
+              {area.note ? (
+                <p className="mt-4 text-lg leading-relaxed text-ink-800">
+                  {area.note}
+                </p>
+              ) : null}
+
               <p className="mt-4 text-lg leading-relaxed text-ink-800">
                 Same technicians, same pricing, same diagnostic process
                 everywhere we work. {area.city} homes get a measured diagnosis

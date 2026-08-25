@@ -70,6 +70,14 @@ export interface ServiceArea {
   state: string;
   /** Optional neighbourhoods/communities within the city. */
   neighborhoods?: string[];
+  /**
+   * Local writing for this town, shown at the top of its page.
+   *
+   * The rest of a city page is shared template with the name substituted, so
+   * this is the only part that makes one page genuinely different from the
+   * next. A page without it is thin content whatever else is on it.
+   */
+  note?: string;
   /** True while the entry is stand-in data. */
   isPlaceholder: boolean;
 }
