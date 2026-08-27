@@ -3,7 +3,6 @@ import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { business } from "@/config/business";
-import { publicAsset } from "@/lib/public-asset";
 import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
 
 /**
@@ -82,26 +81,27 @@ export async function Hero() {
             <div className="relative px-4 py-6 sm:px-8 lg:px-10 lg:py-10">
               <MediaFrame
                 image={{
-                  // TODO: replace with a real hero photograph.
+                  // Referenced directly rather than through an existence check.
                   //
-                  //   Save as:  public/brand/hero.jpg
-                  //   Shape:    4:3 landscape (this frame is aspect-4/3)
-                  //   Size:     1600×1200 or larger, under about 500 KB
-                  //   Subject:  finished equipment, a van, or a technician at
-                  //             work — a real job, not a stock photograph
+                  // The file is committed, so it is always deployed. The check
+                  // that used to guard this looked for the file under
+                  // process.cwd()/public, which does not exist on a serverless
+                  // host — Next serves public assets from its own static layer,
+                  // not from the function's working directory. So the guard
+                  // reported the photograph missing in production and drew a
+                  // placeholder over an image that was being served perfectly
+                  // well.
                   //
-                  // Send the photograph only, never a banner with the headline
-                  // baked into it: text inside an image cannot be read by
-                  // search engines or screen readers and will not reflow on a
-                  // phone. The headline beside this frame is already live text.
-                  //
-                  // Nothing else needs changing. `publicAsset` returns "" while
-                  // the file is absent, and MediaFrame then draws its own
-                  // placeholder rather than a broken image.
-                  src: publicAsset("/brand/hero.jpg"),
-                  alt: `Condensing unit and air handler installed by ${business.name}`,
-                  width: 1200,
-                  height: 900,
+                  // To swap it: overwrite public/brand/hero.jpg. Keep it 4:3
+                  // landscape, 1600×1200 or larger, and send the photograph
+                  // only — never a banner with the headline baked in, because
+                  // text inside an image cannot be read by search engines or
+                  // screen readers and will not reflow on a phone. The headline
+                  // beside this frame is already live text.
+                  src: "/brand/hero.jpg",
+                  alt: `Air conditioning condenser and air handler installed and serviced by ${business.name}`,
+                  width: 1600,
+                  height: 1200,
                 }}
                 icon="snowflake"
                 priority
