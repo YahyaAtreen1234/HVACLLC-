@@ -63,9 +63,13 @@ export const business = {
   // Contact
   // ---------------------------------------------------------------------------
   phone: {
-    display: "(314) 435-2394",
-    /** Digits only, E.164. Must match `display`. */
-    e164: "+13144352394",
+    display: "(602) 203-2395",
+    /**
+     * Digits only, E.164 — this is what `tel:` links dial, so it must match
+     * `display` digit for digit. A mismatch is invisible on the page and
+     * connects the caller to the wrong number, or to nothing.
+     */
+    e164: "+16022032395",
   },
   /** TODO: set to null if there is no separate emergency line. */
   emergencyPhone: null as { display: string; e164: string } | null,
@@ -261,7 +265,6 @@ export const PLACEHOLDER_FIELDS: string[] = [
   "business.legalName — confirm the registered entity name and suffix",
   "business.description — used in the footer, the About band, page titles and the structured data",
   "business.foundedYear",
-  "business.address — city/state still say Phoenix, AZ, but the phone number on the business card is a 314 (St. Louis, MO) line. One of the two is wrong, and it decides the service areas, the timezone and every local search result.",
   "business.address (street, postalCode, mapUrl, mapEmbedUrl)",
   "business.responseTime (only promise what the office actually hits)",
   "business.social.* (all empty)",
