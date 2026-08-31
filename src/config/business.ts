@@ -56,8 +56,16 @@ export const business = {
   /** TODO: replace with a short factual description of the business. */
   description:
     "Residential and light commercial heating, ventilation and air conditioning — repair, replacement and maintenance.",
-  /** TODO: set the real year the business started operating (used in the footer). */
-  foundedYear: 2010,
+  /**
+   * The year the business was established.
+   *
+   * Two other surfaces derive a duration from this and both already hide
+   * themselves below a full year — the trust badge ("N+ years in business")
+   * and the About band's "Serving <city> since" line. So a business in its
+   * first year states the year and makes no claim about longevity, rather
+   * than announcing "0 years".
+   */
+  foundedYear: 2026,
 
   // ---------------------------------------------------------------------------
   // Contact
@@ -264,7 +272,6 @@ export type Business = typeof business;
 export const PLACEHOLDER_FIELDS: string[] = [
   "business.legalName — confirm the registered entity name and suffix",
   "business.description — used in the footer, the About band, page titles and the structured data",
-  "business.foundedYear",
   "business.address (street, postalCode, mapUrl, mapEmbedUrl)",
   "business.responseTime (only promise what the office actually hits)",
   "business.social.* (all empty)",

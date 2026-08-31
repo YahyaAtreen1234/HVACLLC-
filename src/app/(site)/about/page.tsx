@@ -20,7 +20,6 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function AboutPage() {
-  const years = new Date().getFullYear() - business.foundedYear;
   const hasCredentials =
     Boolean(business.credentials.licenseNumber) ||
     business.credentials.insured ||
@@ -76,15 +75,21 @@ export default function AboutPage() {
 
               <dl className="mt-10 grid gap-6 sm:grid-cols-3">
                 <div>
-                  <dt className="eyebrow text-flame-600">In business</dt>
+                  {/*
+                    The year rather than a running total. "Established 2026"
+                    labels the year plainly; "In business 2026" would read as
+                    a duration and invite the question of which was meant.
+                  */}
+                  <dt className="eyebrow text-flame-600">Established</dt>
                   <dd className="mt-1 font-display text-3xl font-bold text-ink-950">
-                    {years > 0 ? `${years} yrs` : "New"}
+                    {business.foundedYear}
                   </dd>
                 </div>
                 <div>
                   <dt className="eyebrow text-flame-600">Focus</dt>
-                  <dd className="mt-1 font-display text-3xl font-bold text-ink-950">
-                    Residential
+                  {/* Balanced wrapping: this one is longer than its siblings. */}
+                  <dd className="mt-1 font-display text-3xl font-bold text-balance text-ink-950">
+                    Residential and commercial
                   </dd>
                 </div>
                 <div>
