@@ -47,7 +47,8 @@ export function Header({ areaSummary }: { areaSummary: string }) {
           <div className="flex items-center justify-between py-2 text-xs">
             <p className="flex items-center gap-2">
               <Icon name="map-pin" size={14} className="text-chill-400" />
-              Serving {areaSummary} and nearby communities
+              {/* areaSummary already reads "<City> and surrounding cities". */}
+              Serving {areaSummary}
             </p>
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-2">

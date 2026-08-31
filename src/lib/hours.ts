@@ -48,21 +48,48 @@ export interface HoursRow {
   isClosed: boolean;
 }
 
+/**
+ * A day recorded as 00:00–23:59 means around the clock.
+ *
+ * That span is how schema.org expresses a 24-hour day, so it is what the
+ * config holds — but printing it literally gives "12:00 AM – 11:59 PM", which
+ * reads like a mistake rather than like being open all night.
+ */
+const isAllDay = (open: string | null, close: string | null) =>
+  open === "00:00" && close === "23:59";
+
+/** True when every day of the week is open around the clock. */
+export function isAlwaysOpen(): boolean {
+  return DAY_ORDER.every((day) =>
+    isAllDay(business.hours[day].open, business.hours[day].close),
+  );
+}
+
 export function getHoursRows(): HoursRow[] {
   return DAY_ORDER.map((day) => {
     const { open, close } = business.hours[day];
     const isClosed = !open || !close;
-    return {
-      day,
-      label: DAY_LABEL[day],
-      value: isClosed ? "Closed" : `${formatTime(open)} – ${formatTime(close)}`,
-      isClosed,
-    };
+
+    const value = isClosed
+      ? "Closed"
+      : isAllDay(open, close)
+        ? "Open 24 hours"
+        : `${formatTime(open)} – ${formatTime(close)}`;
+
+    return { day, label: DAY_LABEL[day], value, isClosed };
   });
 }
 
-/** Compact summary for the footer, e.g. "Mon–Fri 8:00 AM – 5:00 PM". */
+/**
+ * Compact summary for the header strip and footer.
+ *
+ * Derived rather than written, so it cannot drift from the hours themselves —
+ * the previous version hard-coded "Mon–Fri", which would have kept saying so
+ * however the week was configured.
+ */
 export function getWeekdaySummary(): string {
+  if (isAlwaysOpen()) return "Open 24 hours, 7 days a week";
+
   const monday = business.hours.monday;
   if (!monday.open || !monday.close) return "See full hours";
   return `Mon–Fri ${formatTime(monday.open)} – ${formatTime(monday.close)}`;

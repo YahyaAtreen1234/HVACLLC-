@@ -104,15 +104,27 @@ export const business = {
   // ---------------------------------------------------------------------------
   // Hours
   // ---------------------------------------------------------------------------
-  /** Office hours. Weekends closed — after-hours calls go to the emergency line. */
+  /**
+   * Open around the clock, every day.
+   *
+   * 00:00–23:59 is how a 24-hour day is expressed in schema.org's
+   * OpeningHoursSpecification; the site detects that span and prints "Open 24
+   * hours" rather than the literal "12:00 AM – 11:59 PM".
+   *
+   * ⚠️ This is a promise, and it is the one customers test hardest — they ring
+   * at 2am precisely because the site said they could. Every surface reads
+   * from here: the header strip, the contact page table, the footer, and the
+   * hours Google publishes in search results. Narrow it here the day it stops
+   * being true, and all four follow.
+   */
   hours: {
-    monday: { open: "07:00", close: "18:00" },
-    tuesday: { open: "07:00", close: "18:00" },
-    wednesday: { open: "07:00", close: "18:00" },
-    thursday: { open: "07:00", close: "18:00" },
-    friday: { open: "07:00", close: "18:00" },
-    saturday: { open: null, close: null },
-    sunday: { open: null, close: null },
+    monday: { open: "00:00", close: "23:59" },
+    tuesday: { open: "00:00", close: "23:59" },
+    wednesday: { open: "00:00", close: "23:59" },
+    thursday: { open: "00:00", close: "23:59" },
+    friday: { open: "00:00", close: "23:59" },
+    saturday: { open: "00:00", close: "23:59" },
+    sunday: { open: "00:00", close: "23:59" },
   } satisfies Record<WeekDay, BusinessHours>,
   /**
    * Arizona does not observe daylight saving, so this must be America/Phoenix
@@ -158,11 +170,13 @@ export const business = {
      */
     offered: true,
     /**
-     * ⚠️ Only set to true if the company genuinely answers the phone and
-     * dispatches 24 hours a day, 7 days a week. When false the site says
-     * "Emergency HVAC Service" instead of "24/7 Emergency HVAC Service".
+     * Confirmed by the business: the phone is answered and technicians are
+     * dispatched around the clock. This turns "Emergency HVAC Service" into
+     * "24/7 Emergency HVAC Service" site-wide, and matches the opening hours
+     * above — the two must agree, or the site claims 24/7 in one place while
+     * telling Google it shuts at six.
      */
-    available247: false,
+    available247: true,
     /**
      * Shown under the emergency CTA. Keep it factual.
      * TODO: replace with the real after-hours promise (e.g. actual hours covered).
@@ -249,7 +263,6 @@ export const PLACEHOLDER_FIELDS: string[] = [
   "business.address — city/state still say Phoenix, AZ, but the phone number on the business card is a 314 (St. Louis, MO) line. One of the two is wrong, and it decides the service areas, the timezone and every local search result.",
   "business.address (street, postalCode, mapUrl, mapEmbedUrl)",
   "business.responseTime (only promise what the office actually hits)",
-  "business.emergency.available247 — the brand board claims 24/7, confirm before saying it",
   "business.social.* (all empty)",
   "business.credentials.* (intentionally empty — never invent)",
   "data/service-areas.ts — every city is a placeholder",

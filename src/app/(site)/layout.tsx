@@ -6,6 +6,7 @@ import { MobileCallBar } from "@/components/layout/MobileCallBar";
 import { PlaceholderNotice } from "@/components/dev/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { localBusinessSchema } from "@/lib/seo";
+import { business } from "@/config/business";
 import { getServiceAreas } from "@/server/content/read";
 
 /**
@@ -33,10 +34,19 @@ export default async function SiteLayout({
   children: React.ReactNode;
 }) {
   // Read once here so the client Header does not need database access.
-  const areaSummary = (await getServiceAreas())
-    .slice(0, 3)
-    .map((area) => area.city)
-    .join(", ");
+  //
+  // Only confirmed towns are named. The previous version listed the first
+  // three areas regardless, which put Scottsdale and Mesa in the header of
+  // every page while those same towns were deliberately kept out of search
+  // results as unconfirmed — the site was advertising coverage it was
+  // simultaneously refusing to claim to Google.
+  const confirmed = (await getServiceAreas()).filter(
+    (area) => !area.isPlaceholder,
+  );
+
+  const areaSummary = confirmed.length
+    ? `${confirmed[0].city} and surrounding cities`
+    : `${business.address.city} and surrounding cities`;
 
   return (
     <>
