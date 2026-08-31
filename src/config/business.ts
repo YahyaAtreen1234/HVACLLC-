@@ -44,13 +44,14 @@ export const business = {
    * checking against the actual registration.
    */
   legalName: "NorthStar HVAC LLC",
-  /**
-   * The short service list from the business card. Kept separate from
-   * `tagline`, which is a sentence used in running prose — this one is a
-   * label, sitting under the logo.
-   */
+  /** The short service list from the business card, sitting under the logo. */
   serviceLine: "Heating · Cooling · Installation · Repair",
-  /** TODO: replace with a one-line positioning statement you can stand behind. */
+  /**
+   * Currently rendered nowhere. The hero sentence that used to end with it now
+   * carries the business's own wording instead. Kept because a one-line
+   * positioning statement is worth having to hand, but nothing on the site
+   * will show it until something asks for it.
+   */
   tagline: "Heating and cooling done right the first time",
   /** TODO: replace with a short factual description of the business. */
   description:
@@ -258,7 +259,7 @@ export type Business = typeof business;
  */
 export const PLACEHOLDER_FIELDS: string[] = [
   "business.legalName — confirm the registered entity name and suffix",
-  "business.tagline / description",
+  "business.description — used in the footer, the About band, page titles and the structured data",
   "business.foundedYear",
   "business.address — city/state still say Phoenix, AZ, but the phone number on the business card is a 314 (St. Louis, MO) line. One of the two is wrong, and it decides the service areas, the timezone and every local search result.",
   "business.address (street, postalCode, mapUrl, mapEmbedUrl)",

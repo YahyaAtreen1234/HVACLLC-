@@ -17,10 +17,14 @@ import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
  */
 export async function Hero() {
   const areas = await getServiceAreas();
-  const areaSummary = areas
-    .slice(0, 2)
-    .map((area) => area.city)
-    .join(" & ");
+  // Only confirmed towns are named. This previously took the first two areas
+  // regardless, so the hero read "Phoenix & Scottsdale" while Scottsdale was
+  // deliberately held out of search results as unconfirmed coverage.
+  //
+  // Derived rather than written into the sentence, so the wording survives a
+  // change of city without anyone remembering to edit it here.
+  const confirmed = areas.filter((area) => !area.isPlaceholder);
+  const areaSummary = `${confirmed[0]?.city ?? business.address.city} and surrounding cities`;
 
   return (
     <section className="relative overflow-hidden bg-sand-50">
@@ -36,10 +40,22 @@ export async function Hero() {
               <span className="text-flame-600">count on</span>
             </h1>
 
-            <p style={{ animationDelay: "180ms" }} className="animate-rise mt-6 max-w-md text-[1.05rem] leading-relaxed text-ink-700">
-              Professional heating and cooling for homes and businesses in{" "}
-              {areaSummary}. {business.tagline}.
-            </p>
+            {/*
+              An h2, as requested. The base stylesheet gives every heading the
+              display face at weight 700 with tightened tracking and balanced
+              wrapping, which would turn this into a second headline competing
+              with the h1 above it — so those four are reset here to keep the
+              sentence reading as body copy. The element changed; the design
+              did not.
+            */}
+            <h2
+              style={{ animationDelay: "180ms" }}
+              className="animate-rise mt-6 max-w-lg font-sans text-[1.05rem] leading-relaxed font-normal tracking-normal text-ink-700 [text-wrap:pretty]"
+            >
+              Expert heating and cooling services for homes and businesses
+              across {areaSummary}. Dependable solutions, exceptional
+              workmanship, and service you can trust.
+            </h2>
 
             <div style={{ animationDelay: "300ms" }} className="animate-rise mt-8 flex flex-wrap gap-3">
               <Link
