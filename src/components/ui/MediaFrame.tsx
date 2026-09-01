@@ -72,8 +72,20 @@ export function MediaFrame({
 }
 
 /**
- * The stand-in shown until a real photo exists. It deliberately looks like a
- * placeholder — nobody should be able to mistake it for finished artwork.
+ * The stand-in shown until a real photo exists.
+ *
+ * Two audiences, two versions. In development it names the shot that is
+ * missing, because the person who can fix it is looking at it. In production
+ * it becomes a quiet branded panel: a customer reading "PHOTO PLACEHOLDER" on
+ * a live page learns only that the business did not finish its website, which
+ * is worse than a plain panel that simply carries the brand.
+ *
+ * Neither version invents a photograph. The brief is not carried anywhere in
+ * the production markup — with no photo there is no <img>, so there is no alt
+ * to hold it — which is correct: an empty decorative panel has nothing to
+ * announce to a screen reader. The outstanding shots are tracked in
+ * PLACEHOLDER_FIELDS and named in the source, not left to be spotted on the
+ * page.
  */
 function PlaceholderPhoto({
   brief,
@@ -82,6 +94,8 @@ function PlaceholderPhoto({
   brief: string;
   icon: IconName;
 }) {
+  const showBrief = process.env.NODE_ENV !== "production";
+
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-linear-135 from-ink-800 via-ink-900 to-ink-950 p-6 text-center">
       <div
@@ -91,10 +105,13 @@ function PlaceholderPhoto({
       <div className="relative flex size-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-chill-300">
         <Icon name={icon} size={26} />
       </div>
-      <div className="relative max-w-xs">
-        <p className="eyebrow text-chill-300">Photo placeholder</p>
-        <p className="mt-2 text-sm leading-relaxed text-ink-200">{brief}</p>
-      </div>
+
+      {showBrief ? (
+        <div className="relative max-w-xs">
+          <p className="eyebrow text-chill-300">Photo placeholder</p>
+          <p className="mt-2 text-sm leading-relaxed text-ink-200">{brief}</p>
+        </div>
+      ) : null}
     </div>
   );
 }
