@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
@@ -11,6 +11,7 @@ import { business } from "@/config/business";
 import { cta, emergencyLabel } from "@/config/site";
 import { phoneDisplay, telHref } from "@/lib/phone";
 import { getWeekdaySummary } from "@/lib/hours";
+import { nextScrollState, type ScrollState } from "@/lib/hide-on-scroll";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,12 +24,54 @@ import { cn } from "@/lib/utils";
  */
 export function Header({ areaSummary }: { areaSummary: string }) {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  const headerRef = useRef<HTMLElement>(null);
+  const state = useRef<ScrollState>({ hidden: false, lastY: 0 });
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    // Scroll fires far faster than the screen refreshes. Reading the position
+    // inside a frame callback means the work happens once per painted frame
+    // instead of once per event, and reading scrollY in a handler that also
+    // writes would force a synchronous layout on every one.
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
+      const y = window.scrollY;
+
+      setScrolled(y > 8);
+
+      // Hiding the header while keyboard focus is inside it would take the
+      // focused control off-screen mid-tab, leaving the ring somewhere the
+      // reader cannot see.
+      const holdsFocus =
+        headerRef.current?.contains(document.activeElement) ?? false;
+
+      // Body scroll is locked while the mobile menu is open, so this is really
+      // a guard against a programmatic scroll doing something surprising.
+      const menuOpen = document.body.style.overflow === "hidden";
+
+      const next = nextScrollState(state.current, y, {
+        locked: holdsFocus || menuOpen,
+      });
+
+      state.current = next;
+      setHidden(next.hidden);
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(measure);
+    };
+
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   // Computed by the server layout — this component is client-side and cannot
@@ -36,9 +79,19 @@ export function Header({ areaSummary }: { areaSummary: string }) {
 
   return (
     <header
+      ref={headerRef}
       className={cn(
-        "sticky top-0 z-40 transition-shadow duration-300",
+        "sticky top-0 z-40",
+        // Translate rather than display or height: it runs on the compositor,
+        // so the page underneath never reflows and the text does not reflow
+        // with it. The element also keeps its place in the layout, so nothing
+        // below jumps up to fill the gap.
+        "transition-[transform,box-shadow] duration-300 ease-out will-change-transform",
+        hidden ? "-translate-y-full" : "translate-y-0",
         scrolled ? "shadow-bar" : "shadow-none",
+        // With motion reduced, the header still hides — the point is to get it
+        // out of the way — but it does so without the sliding movement.
+        "motion-reduce:transition-none",
       )}
     >
       {/* Utility bar — desktop only, low-priority information. */}
