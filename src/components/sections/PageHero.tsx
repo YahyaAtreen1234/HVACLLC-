@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs, type Crumb } from "@/components/Breadcrumbs";
 import { CtaPair } from "@/components/cta/CtaButtons";
@@ -5,12 +7,27 @@ import { CtaPair } from "@/components/cta/CtaButtons";
 /**
  * Shared header band for inner pages: breadcrumbs, H1 and an optional CTA pair.
  * Using one component keeps every page's heading rhythm and spacing identical.
+ *
+ * ## Background photographs
+ *
+ * Pass `image` to put a photograph behind the band:
+ *
+ *     <PageHero image="/images/areas/phoenix-street.jpg" ... />
+ *
+ * It is layered under a navy scrim heavy enough to hold white text at the
+ * contrast the rest of the site meets, so the heading stays readable over a
+ * bright sky or a pale wall. That does mean the photograph reads as texture
+ * rather than as a subject — which is what a header band wants, and why a busy
+ * image with its own text or logos in it works badly here. A wide, simple
+ * scene with room to be darkened is the shot to use.
  */
 export function PageHero({
   eyebrow,
   title,
   lead,
   crumbs,
+  image,
+  imageAlt,
   withCta = true,
   children,
 }: {
@@ -18,11 +35,46 @@ export function PageHero({
   title: string;
   lead?: string;
   crumbs: Crumb[];
+  /** Path under /public. Omit for the plain navy band. */
+  image?: string;
+  /**
+   * Left empty by default: a decorative backdrop behind a heading that already
+   * states the page's subject has nothing to add for a screen reader, and
+   * describing it would only repeat the H1.
+   */
+  imageAlt?: string;
   withCta?: boolean;
   children?: React.ReactNode;
 }) {
   return (
     <section className="on-dark relative overflow-hidden bg-ink-950 text-white">
+      {image ? (
+        <>
+          <Image
+            src={image}
+            alt={imageAlt ?? ""}
+            fill
+            // Full-bleed at every breakpoint, so the browser is told to fetch
+            // a viewport-width file rather than guessing at the layout default.
+            sizes="100vw"
+            priority
+            className="object-cover"
+          />
+          {/*
+            Two layers rather than one flat wash: a near-solid navy on the left
+            where the text sits, easing off to the right so the photograph is
+            still visible, plus a light overall darkening to catch anything
+            bright at the edges. A single uniform overlay heavy enough for the
+            text would flatten the whole image to mud.
+          */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-linear-to-r from-ink-950 via-ink-950/90 to-ink-950/70"
+          />
+          <div aria-hidden="true" className="absolute inset-0 bg-ink-950/40" />
+        </>
+      ) : null}
+
       <div aria-hidden="true" className="absolute inset-0 hairline-grid opacity-60" />
       <div
         aria-hidden="true"
