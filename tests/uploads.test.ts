@@ -22,9 +22,8 @@ const dir = mkdtempSync(join(tmpdir(), "hvac-uploads-"));
 process.env.UPLOADS_PATH = dir;
 process.env.BLOB_READ_WRITE_TOKEN = "";
 
-const { saveUpload, contentTypeFor } = await import(
-  "../src/server/content/uploads"
-);
+const { saveUpload, contentTypeFor, isPrivateStoreError, blobPathFor } =
+  await import("../src/server/content/uploads");
 
 after(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -129,5 +128,58 @@ describe("content types", () => {
     assert.equal(contentTypeFor("/uploads/team/a.html"), null);
     assert.equal(contentTypeFor("/uploads/team/a.js"), null);
     assert.equal(contentTypeFor("/uploads/team/a"), null);
+  });
+});
+
+/**
+ * A Blob store is created as either public or private and cannot serve the
+ * other kind. The store connected to this project is private, which rejected
+ * every upload with "Cannot use public access on a private store" — aborting
+ * the whole save, so no photo could ever be attached.
+ *
+ * The rejection is matched on its message, which is brittle enough to be worth
+ * pinning: if it stops matching, uploads fail loudly rather than silently
+ * retrying in the wrong mode.
+ */
+describe("recognising a private Blob store", () => {
+  test("matches the rejection the store actually returns", () => {
+    const real = new Error(
+      "Vercel Blob: Cannot use public access on a private store. The store is configured with private access.",
+    );
+    assert.equal(isPrivateStoreError(real), true);
+  });
+
+  test("does not swallow unrelated blob failures", () => {
+    // These must keep throwing. Treating any of them as a store-access problem
+    // would retry privately, appear to work, and bury a real fault.
+    for (const message of [
+      "Vercel Blob: This store does not exist",
+      "Vercel Blob: Access denied, please provide a valid token",
+      "Vercel Blob: File is too large",
+      "fetch failed",
+    ]) {
+      assert.equal(
+        isPrivateStoreError(new Error(message)),
+        false,
+        `should not be treated as a private-store error: ${message}`,
+      );
+    }
+  });
+
+  test("survives a thrown non-Error", () => {
+    assert.equal(isPrivateStoreError("something odd"), false);
+    assert.equal(isPrivateStoreError(undefined), false);
+  });
+});
+
+describe("where a private blob is read back from", () => {
+  test("points at this site's own image route", () => {
+    // A private blob has no publicly fetchable URL, so the stored record has
+    // to point at the route that can read it back with the token.
+    assert.equal(blobPathFor("team/abc.jpg"), "/uploads/team/abc.jpg");
+  });
+
+  test("keeps the folder, so the read resolves to the same blob", () => {
+    assert.equal(blobPathFor("services/9f2.webp"), "/uploads/services/9f2.webp");
   });
 });

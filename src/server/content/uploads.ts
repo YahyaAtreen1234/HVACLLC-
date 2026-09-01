@@ -102,6 +102,33 @@ export type UploadResult =
   | { ok: false; error: string };
 
 /**
+ * Whether the connected Blob store accepts public blobs.
+ *
+ * A store is created as either public or private and cannot serve the other
+ * kind, so this is discovered once from the first upload and remembered for
+ * the life of the process rather than configured by hand. Getting it wrong in
+ * an environment variable is exactly the sort of setting nobody revisits.
+ */
+let storeAccess: "unknown" | "public" | "private" = "unknown";
+
+/**
+ * Where a private blob is read back from.
+ *
+ * Exported so the routing is covered by a test: a wrong path here fails only
+ * once a photo is uploaded and viewed, which is late.
+ */
+export const blobPathFor = (pathname: string) => `/uploads/${pathname}`;
+
+/** The store rejecting a public blob because it was created private. */
+export function isPrivateStoreError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    /private (?:access|store)/i.test(message) &&
+    /public access|cannot use public/i.test(message)
+  );
+}
+
+/**
  * Saves an uploaded image and returns the public path to store on the record.
  *
  * The client's filename is never used — it is attacker-controlled and a
@@ -140,18 +167,44 @@ export async function saveUpload(
       // never loads the client, and never needs the package resolved at all.
       const { put } = await import("@vercel/blob");
 
+      const pathname = `${folder}/${name}`;
+
       // Buffer rather than the Uint8Array used for signature sniffing: the
       // blob client accepts Buffer, Blob, File or a stream, not a bare view.
-      const { url } = await put(`${folder}/${name}`, Buffer.from(bytes), {
-        access: "public",
+      const body = Buffer.from(bytes);
+      const options = {
         contentType: match.mime,
         token: env.blobToken,
         // The name is already a UUID; a second random suffix would only make
         // the stored URL harder to match against the record.
         addRandomSuffix: false,
-      });
+      };
 
-      return { ok: true, path: url };
+      if (storeAccess !== "private") {
+        try {
+          const { url } = await put(pathname, body, {
+            ...options,
+            access: "public",
+          });
+          storeAccess = "public";
+          return { ok: true, path: url };
+        } catch (error) {
+          // A store created with private access refuses public blobs outright.
+          // That is a property of the store, not of this upload, so remember it
+          // and stop asking — otherwise every future upload pays for the same
+          // rejected request before succeeding.
+          if (!isPrivateStoreError(error)) throw error;
+          storeAccess = "private";
+        }
+      }
+
+      await put(pathname, body, { ...options, access: "private" });
+
+      // A private blob has no publicly fetchable URL, so the record stores the
+      // path to this site's own image route, which reads it back with the
+      // token. Same shape as a filesystem upload, so nothing downstream needs
+      // to know which kind of store is behind it.
+      return { ok: true, path: blobPathFor(pathname) };
     } catch (error) {
       return {
         ok: false,
