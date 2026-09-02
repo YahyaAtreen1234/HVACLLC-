@@ -12,10 +12,13 @@ import type { TrustBadgeItem } from "@/types";
 export function getTrustBadges(): TrustBadgeItem[] {
   const badges: TrustBadgeItem[] = [];
 
-  if (business.credentials.licenseNumber) {
+  if (business.credentials.licensed) {
     badges.push({
       label: "Licensed",
-      detail: business.credentials.licenseNumber,
+      // The number when there is one, since a customer can check it against
+      // the registrar. Without it the badge still states the fact rather than
+      // disappearing, which would read as not being licensed at all.
+      detail: business.credentials.licenseNumber || "Licensed contractor",
       icon: "shield",
     });
   }

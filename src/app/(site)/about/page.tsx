@@ -20,7 +20,21 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function AboutPage() {
+  // Built from what is actually held, so the heading can never claim more than
+  // the badges beneath it show. Falls back to the neutral wording when none is
+  // set, rather than announcing credentials the business has not entered.
+  const claims = [
+    business.credentials.licensed && "Licensed",
+    business.credentials.bonded && "Bonded",
+    business.credentials.insured && "Insured",
+  ].filter(Boolean);
+
+  const credentialsTitle = claims.length
+    ? claims.join(" · ")
+    : "Licensing and insurance";
+
   const hasCredentials =
+    business.credentials.licensed ||
     Boolean(business.credentials.licenseNumber) ||
     business.credentials.insured ||
     business.credentials.bonded ||
@@ -145,9 +159,16 @@ export default function AboutPage() {
 
       <Section tone="muted">
         <Container>
+          {/*
+            The heading states the three credentials, so it is driven by the
+            same config the badges below read. Hard-coding the words would let
+            the heading keep claiming all three after one of them lapsed and
+            was switched off in the config — the page would contradict itself
+            and, worse, keep asserting something untrue.
+          */}
           <SectionHeading
             eyebrow="Credentials"
-            title="Licensing and insurance"
+            title={credentialsTitle}
             lead="Only verifiable credentials are published here."
           />
 

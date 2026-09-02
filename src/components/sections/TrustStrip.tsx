@@ -22,10 +22,18 @@ function pillars(): Pillar[] {
   const items: Pillar[] = [];
   const { credentials, emergency } = business;
 
-  if (credentials.licenseNumber || credentials.insured) {
+  // Titled from what is actually held rather than a fixed "Licensed & Insured",
+  // which would have claimed insurance off the back of a licence number alone.
+  const held = [
+    (credentials.licensed || credentials.licenseNumber) && "Licensed",
+    credentials.bonded && "Bonded",
+    credentials.insured && "Insured",
+  ].filter(Boolean) as string[];
+
+  if (held.length) {
     items.push({
       icon: "shield",
-      title: "Licensed & Insured",
+      title: held.join(" · "),
       note: "Your safety is our priority",
     });
   }

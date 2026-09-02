@@ -215,12 +215,25 @@ export const business = {
    * hand — anything left empty is simply not rendered anywhere on the site.
    */
   credentials: {
-    /** TODO: e.g. "ST HVAC Lic. #000000" — leave "" if not confirmed. */
+    /**
+     * Held separately from the number below, because being licensed is the
+     * fact and the number is the evidence for it. A contractor can be licensed
+     * today and publish the number later; this lets the site say the true
+     * thing in the meantime instead of staying silent.
+     */
+    licensed: true,
+    /**
+     * TODO: the ROC number, e.g. "AZ ROC #000000".
+     *
+     * Worth adding: a customer can check a number against the registrar, and
+     * "Licensed" with a number verifiable in thirty seconds is worth more than
+     * the word on its own. It appears under the Licensed badge when set.
+     */
     licenseNumber: "",
-    /** TODO: set true only if the business carries current liability insurance. */
-    insured: false,
-    /** TODO: set true only if the business is bonded. */
-    bonded: false,
+    /** Current liability coverage. */
+    insured: true,
+    /** Surety bonded. */
+    bonded: true,
     /** TODO: manufacturer/industry certifications you can evidence, e.g. "NATE-certified technicians". */
     certifications: [] as string[],
     /** TODO: awards with the awarding body and year. */
