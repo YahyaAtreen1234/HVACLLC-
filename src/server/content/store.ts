@@ -528,3 +528,115 @@ export const settingsStore = {
     );
   },
 };
+
+// ---------------------------------------------------------------------------
+// Reviews
+// ---------------------------------------------------------------------------
+
+export interface DbReview {
+  id: string;
+  author: string;
+  rating: number;
+  quote: string;
+  source: string;
+  sourceUrl: string;
+  /** ISO date the review was left, as published on the source platform. */
+  reviewDate: string;
+  location: string;
+  /** Optional service slug, to show a review beside the work it describes. */
+  service: string;
+  published: boolean;
+  sortOrder: number;
+}
+
+export type ReviewInput = Omit<DbReview, "id">;
+
+function toReview(row: Row): DbReview {
+  return {
+    id: str(row, "id"),
+    author: str(row, "author"),
+    rating: num(row, "rating"),
+    quote: str(row, "quote"),
+    source: str(row, "source"),
+    sourceUrl: str(row, "source_url"),
+    reviewDate: str(row, "review_date"),
+    location: str(row, "location"),
+    service: str(row, "service"),
+    published: bool(row, "published"),
+    sortOrder: num(row, "sort_order"),
+  };
+}
+
+export const reviewsStore = {
+  async all(includeUnpublished = false): Promise<DbReview[]> {
+    // Newest first within a sort order: how recent a review is forms part of
+    // how much weight a reader gives it.
+    const sql = includeUnpublished
+      ? "SELECT * FROM reviews ORDER BY sort_order, review_date DESC"
+      : "SELECT * FROM reviews WHERE published = TRUE ORDER BY sort_order, review_date DESC";
+    return (await query(sql)).map(toReview);
+  },
+
+  async byId(id: string): Promise<DbReview | null> {
+    const row = await queryOne("SELECT * FROM reviews WHERE id = $1", [id]);
+    return row ? toReview(row) : null;
+  },
+
+  async create(input: ReviewInput): Promise<DbReview> {
+    const id = randomUUID();
+    await execute(
+      `INSERT INTO reviews
+         (id, author, rating, quote, source, source_url, review_date, location,
+          service, published, sort_order, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+      [
+        id,
+        input.author,
+        input.rating,
+        input.quote,
+        input.source,
+        input.sourceUrl,
+        input.reviewDate,
+        input.location,
+        input.service,
+        input.published,
+        input.sortOrder,
+        now(),
+      ],
+    );
+    return { id, ...input };
+  },
+
+  async update(id: string, input: ReviewInput): Promise<DbReview | null> {
+    const changed = await execute(
+      `UPDATE reviews SET
+         author=$1, rating=$2, quote=$3, source=$4, source_url=$5,
+         review_date=$6, location=$7, service=$8, published=$9,
+         sort_order=$10, updated_at=$11
+       WHERE id=$12`,
+      [
+        input.author,
+        input.rating,
+        input.quote,
+        input.source,
+        input.sourceUrl,
+        input.reviewDate,
+        input.location,
+        input.service,
+        input.published,
+        input.sortOrder,
+        now(),
+        id,
+      ],
+    );
+    return changed ? { id, ...input } : null;
+  },
+
+  async remove(id: string): Promise<boolean> {
+    return (await execute("DELETE FROM reviews WHERE id = $1", [id])) > 0;
+  },
+
+  count(): Promise<number> {
+    return countRows("SELECT COUNT(*) AS n FROM reviews");
+  },
+};

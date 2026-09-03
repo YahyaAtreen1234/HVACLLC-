@@ -16,12 +16,14 @@ import { isLoggedIn } from "@/server/admin/session";
 import {
   areasStore,
   faqsStore,
+  reviewsStore,
   servicesStore,
   teamStore,
   type ServiceInput,
   type TeamMemberInput,
   type FaqInput,
   type ServiceAreaInput,
+  type ReviewInput,
 } from "@/server/content/store";
 import { postgresLeadStore } from "@/server/leads/store";
 import { saveUpload } from "@/server/content/uploads";
@@ -331,6 +333,59 @@ export async function deleteFaq(formData: FormData): Promise<void> {
 // ---------------------------------------------------------------------------
 // Service areas
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Reviews
+// ---------------------------------------------------------------------------
+
+function reviewFromForm(form: FormData): ReviewInput {
+  const rating = number(form, "rating");
+
+  return {
+    author: text(form, "author"),
+    // Clamped rather than trusted. The database also constrains it, but the
+    // rating feeds the average published as structured data, so a stray value
+    // would misstate a public claim about the business.
+    rating: Math.min(5, Math.max(1, Math.round(rating) || 5)),
+    quote: text(form, "quote"),
+    source: text(form, "source") || "Google",
+    sourceUrl: text(form, "sourceUrl"),
+    reviewDate: text(form, "reviewDate") || new Date().toISOString().slice(0, 10),
+    location: text(form, "location"),
+    service: text(form, "service"),
+    published: checked(form, "published"),
+    sortOrder: number(form, "sortOrder"),
+  };
+}
+
+export async function saveReview(
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  await requireSession();
+
+  const id = text(formData, "id");
+
+  try {
+    const input = reviewFromForm(formData);
+
+    if (id) await reviewsStore.update(id, input);
+    else await reviewsStore.create(input);
+
+    refreshPublicPages();
+  } catch (error) {
+    return { error: asMessage(error) };
+  }
+
+  redirect("/admin/reviews");
+}
+
+export async function deleteReview(formData: FormData): Promise<void> {
+  await requireSession();
+  await reviewsStore.remove(text(formData, "id"));
+  refreshPublicPages();
+  redirect("/admin/reviews");
+}
 
 function areaFromForm(form: FormData): ServiceAreaInput {
   const city = text(form, "city");

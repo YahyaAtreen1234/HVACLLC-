@@ -3,7 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ReviewCard, ReviewsEmptyState } from "@/components/cards/ReviewCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
-import { getAverageRating, getFeaturedReviews, hasReviews, reviews } from "@/data/reviews";
+import { getAverageRating, getReviews } from "@/server/content/read";
 
 /**
  * Reviews section.
@@ -12,7 +12,7 @@ import { getAverageRating, getFeaturedReviews, hasReviews, reviews } from "@/dat
  * this renders an honest empty state instead of invented testimonials, and the
  * rating summary is omitted entirely rather than defaulted to five stars.
  */
-export function ReviewsSection({
+export async function ReviewsSection({
   limit = 3,
   showAll = false,
   tone = "muted",
@@ -21,8 +21,10 @@ export function ReviewsSection({
   showAll?: boolean;
   tone?: "light" | "muted";
 }) {
-  const shown = showAll ? reviews : getFeaturedReviews(limit);
-  const average = getAverageRating();
+  const reviews = await getReviews();
+  const hasReviews = reviews.length > 0;
+  const shown = showAll ? reviews : reviews.slice(0, limit);
+  const average = await getAverageRating();
 
   return (
     <Section tone={tone} id="reviews">

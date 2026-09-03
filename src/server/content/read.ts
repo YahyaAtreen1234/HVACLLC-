@@ -1,6 +1,12 @@
-import type { Faq, Service, ServiceArea, TeamMember } from "@/types";
+import type { Faq, Review, Service, ServiceArea, TeamMember } from "@/types";
 import { seedContentIfEmpty } from "./seed";
-import { areasStore, faqsStore, servicesStore, teamStore } from "./store";
+import {
+  areasStore,
+  faqsStore,
+  reviewsStore,
+  servicesStore,
+  teamStore,
+} from "./store";
 
 import { services as fallbackServices } from "@/data/services";
 import { team as fallbackTeam } from "@/data/team";
@@ -206,6 +212,46 @@ export async function getNearbyAreas(
 
 export async function getServiceAreasArePlaceholder(): Promise<boolean> {
   return (await getServiceAreas()).some((area) => area.isPlaceholder);
+}
+
+/**
+ * Published reviews, newest first.
+ *
+ * Adapted into the same `Review` shape the cards and the structured data
+ * already expect, so moving them into the database changed no component.
+ */
+export async function getReviews(): Promise<Review[]> {
+  return readOr(
+    "reviews",
+    async () =>
+      (await reviewsStore.all()).map((row) => ({
+        author: row.author,
+        rating: Math.min(5, Math.max(1, row.rating)) as Review["rating"],
+        quote: row.quote,
+        source: row.source,
+        sourceUrl: row.sourceUrl || undefined,
+        date: row.reviewDate,
+        location: row.location || undefined,
+        service: row.service || undefined,
+      })),
+    // No shipped defaults, and deliberately so: an invented testimonial is
+    // deceptive advertising, not a placeholder.
+    () => [],
+  );
+}
+
+/**
+ * Average of the published reviews, or null when there are none.
+ *
+ * Never a fixed number. It is emitted as `aggregateRating` in the structured
+ * data, which is a public claim about the business, so it has to be derived
+ * from what is actually published.
+ */
+export async function getAverageRating(): Promise<number | null> {
+  const all = await getReviews();
+  if (!all.length) return null;
+  const total = all.reduce((sum, review) => sum + review.rating, 0);
+  return Math.round((total / all.length) * 10) / 10;
 }
 
 export async function getServiceAreas(): Promise<ServiceArea[]> {

@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/services", label: "Services" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/faqs", label: "FAQs" },
+  { href: "/admin/reviews", label: "Reviews" },
   { href: "/admin/areas", label: "Service areas" },
 ];
 

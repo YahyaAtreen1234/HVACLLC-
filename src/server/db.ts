@@ -14,7 +14,7 @@ import { env } from "./env";
  * server was restarted.
  */
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 /**
  * Advisory lock id for migrations. Any fixed number works; it only has to be
@@ -191,6 +191,36 @@ async function migrate(client: PoolClient): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_team_sort     ON team_members (sort_order);
       CREATE INDEX IF NOT EXISTS idx_faqs_topic    ON faqs (topic, sort_order);
       CREATE INDEX IF NOT EXISTS idx_areas_sort    ON service_areas (sort_order);
+    `);
+  }
+
+  // Migration 2 — customer reviews.
+  //
+  // Previously these lived only in a TypeScript file, so publishing one meant a
+  // developer and a deploy. A contractor collects reviews continuously and the
+  // person holding them is not the person with the repository.
+  if (current < 2) {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id          TEXT PRIMARY KEY,
+        author      TEXT NOT NULL,
+        -- Constrained at the database rather than only in the form: a rating
+        -- outside 1-5 would silently corrupt the average shown in search
+        -- results, and that average is a published claim.
+        rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        quote       TEXT NOT NULL,
+        source      TEXT    NOT NULL DEFAULT 'Google',
+        source_url  TEXT    NOT NULL DEFAULT '',
+        review_date TEXT    NOT NULL,
+        location    TEXT    NOT NULL DEFAULT '',
+        service     TEXT    NOT NULL DEFAULT '',
+        published   BOOLEAN NOT NULL DEFAULT TRUE,
+        sort_order  INTEGER NOT NULL DEFAULT 0,
+        updated_at  TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_reviews_sort
+        ON reviews (sort_order, review_date DESC);
     `);
   }
 

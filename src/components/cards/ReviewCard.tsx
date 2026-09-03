@@ -114,13 +114,19 @@ export function ReviewsEmptyState({ className }: { className?: string }) {
         <Button href={reviewUrl} variant="secondary" size="md" className="mt-6">
           Leave a review
         </Button>
-      ) : (
+      ) : process.env.NODE_ENV !== "production" ? (
+        /*
+          Development only. This was rendering on the live site, showing
+          customers a note addressed to a developer, complete with source file
+          paths — which reads as an unfinished website rather than a company
+          that has not gathered reviews yet.
+        */
         <p className="mt-6 text-xs text-ink-500">
-          {/* Development note for whoever finishes the build. */}
-          TODO: add real reviews to <code>src/data/reviews.ts</code> and set the
-          Google Business Profile URL in <code>src/config/business.ts</code>.
+          Add reviews at <code>/admin/reviews</code>, and set{" "}
+          <code>business.social.google</code> so this panel offers customers a
+          link to leave one.
         </p>
-      )}
+      ) : null}
     </div>
   );
 }
