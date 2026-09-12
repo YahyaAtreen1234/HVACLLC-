@@ -19,8 +19,20 @@ import { business } from "./business";
  *
  * NEXT_PUBLIC_SITE_URL still overrides it, which is what a preview deployment
  * or a domain change needs.
+ *
+ * The `www.` is not decoration — it is where visitors actually end up. The apex
+ * is registered in Vercel as a 308 redirect to the www host, so every real
+ * request finishes there. While this constant said `https://northstarhvacllc.us`
+ * the site was publishing a canonical URL, a sitemap and Open Graph links that
+ * all pointed at an address that immediately redirects: a wasted hop on every
+ * crawl, two URLs competing for the same ranking signals, and shared links
+ * resolving to a different host than the one in the card.
+ *
+ * If the redirect is ever flipped so the apex serves directly and `www`
+ * redirects to it, change this one line back — it is the only place the
+ * origin is written.
  */
-const PRODUCTION_ORIGIN = "https://northstarhvacllc.us";
+const PRODUCTION_ORIGIN = "https://www.northstarhvacllc.us";
 
 export const site = {
   /** Canonical origin, no trailing slash. */
