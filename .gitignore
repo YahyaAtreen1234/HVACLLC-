@@ -22,7 +22,14 @@
 
 # misc
 .DS_Store
+
+# Private keys and certificate bundles, under every extension they arrive with.
+# `*.pem` alone missed `.key`, which is what most tools write a private key to.
 *.pem
+*.key
+*.p12
+*.pfx
+*.jks
 
 # debug
 npm-debug.log*
@@ -42,8 +49,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Local lead database (SQLite)
+# Local lead database, and any local upload spool
 .data/
-
-.vercel
-.env*
