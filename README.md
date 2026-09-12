@@ -308,6 +308,14 @@ Put the variables in a `.env` file beside `docker-compose.yml` first. Data
 lives in the `hvac-data` named volume, which survives rebuilds and
 `docker compose down`.
 
+That `.env` is also how the optional settings reach the container: the web
+service loads it with `required: false`, so the file can be absent entirely
+and anything in it that the compose file does not override is passed straight
+through. Adding `RESEND_API_KEY` there is enough — there is no matching line
+to add to `docker-compose.yml`, and deliberately so, per the note under
+[Environment](#environment). Needs Compose v2.24 or newer for the
+`required: false` form.
+
 ### Why NEXT_PUBLIC_SITE_URL is different
 
 It is compiled into the pages browsers download, not read when the server
@@ -343,6 +351,21 @@ After deploying, hit `/api/health` — it lists whatever is still missing.
 optional — the site boots without it, and `/api/health` reports what is missing
 rather than refusing to start. Leave an optional variable **unset**; do not
 invent a value to fill the field.
+
+> **If a deploy form demands one of the optional variables, the form is wrong.**
+> One-click platforms build their setup screen by scraping interpolation
+> references out of `docker-compose.yml` with a regular expression, and a regex
+> sees only a name — so a variable deliberately defaulted to empty still comes
+> back as a field marked required, refusing to submit until something is typed
+> into it. `docker-compose.yml` and `render.yaml` therefore name only the
+> variables you should genuinely be asked for. Optional ones are passed through
+> from `.env` (self-hosting) or added in the platform's own environment settings
+> (managed hosting), so nothing prompts for a value that does not exist yet.
+>
+> Never type a placeholder to get past such a field. For a webhook in
+> particular, a made-up URL is not inert — it sends a real POST containing a
+> customer's name, phone number and address to a host you do not control, once
+> per enquiry.
 
 | Variable                      | Needed when                | Purpose                                      |
 | ----------------------------- | -------------------------- | -------------------------------------------- |

@@ -41,18 +41,51 @@ services:
       # Uploaded photos still live on disk. Named volume rather than a bind
       # mount so it survives `docker compose down` and rebuilds.
       - hvac-uploads:/data
+    # Optional settings are passed through from `.env`, not named below.
+    #
+    # The four notification variables used to be mapped here with an empty
+    # default, which reads as "leave it blank" — and is what Compose itself
+    # does with them. But one-click deploy UIs build their setup form by
+    # scraping interpolation references out of this file with a regular
+    # expression, and a regex sees only the name. Every optional variable
+    # became a field marked required, and the deploy could not be submitted
+    # until each was filled — for variables whose entire purpose is being
+    # blank. The only way to satisfy that form is to type a URL that does not
+    # exist, which is far worse than leaving it unset: it means a real POST
+    # carrying a customer's name, phone number and address to a host nobody
+    # controls, on every single enquiry.
+    #
+    # Note for anyone editing: do not write an interpolation reference for an
+    # optional variable in these comments either. A regex does not skip comment
+    # lines, so a name mentioned here comes back as a required form field just
+    # as if it were live configuration.
+    #
+    # Passing them through a file instead keeps the names out of the manifest,
+    # so nothing prompts for them. `required: false` lets the file be absent
+    # entirely — which it is on a managed host, where the platform injects
+    # environment variables directly. Needs Compose v2.24 or newer.
+    env_file:
+      - path: .env
+        required: false
+    # These win over anything of the same name in `.env`, which is intended:
+    # the database lives in the `db` service above and the uploads path is
+    # fixed by the volume mount, so neither is the operator's to choose here.
     environment:
       DATABASE_URL: postgres://hvac:${POSTGRES_PASSWORD:-hvac-local-dev}@db:5432/hvac
       UPLOADS_PATH: /data/uploads
+      # Named explicitly because a deploy form *should* ask for these — an
+      # admin panel with no credentials refuses every login.
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
       IP_HASH_SALT: ${IP_HASH_SALT}
       ADMIN_API_TOKEN: ${ADMIN_API_TOKEN}
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      NOTIFY_FROM_EMAIL: ${NOTIFY_FROM_EMAIL:-}
-      NOTIFY_TO_EMAIL: ${NOTIFY_TO_EMAIL:-}
-      SERVICE_REQUEST_WEBHOOK_URL: ${SERVICE_REQUEST_WEBHOOK_URL:-}
+      #
+      # Lead notification — RESEND_API_KEY, NOTIFY_FROM_EMAIL, NOTIFY_TO_EMAIL
+      # and SERVICE_REQUEST_WEBHOOK_URL — is deliberately absent. All four are
+      # optional; leads are stored and listed at /admin/leads either way. Put
+      # them in `.env` (self-hosting) or the platform's own environment
+      # settings (managed hosting) if and when you have real values.
 
 volumes:
   hvac-db:

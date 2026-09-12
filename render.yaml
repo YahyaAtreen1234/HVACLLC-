@@ -59,17 +59,20 @@ services:
       - key: ADMIN_API_TOKEN
         generateValue: true
 
-      # Lead notifications. Without at least one of these, enquiries are
-      # recorded but nobody is told about them — set the Resend trio, or a
-      # webhook, or both.
-      - key: RESEND_API_KEY
-        sync: false
-      - key: NOTIFY_FROM_EMAIL
-        sync: false
-      - key: NOTIFY_TO_EMAIL
-        sync: false
-      - key: SERVICE_REQUEST_WEBHOOK_URL
-        sync: false
+      # Lead notification is deliberately not listed here.
+      #
+      # RESEND_API_KEY, NOTIFY_FROM_EMAIL, NOTIFY_TO_EMAIL and
+      # SERVICE_REQUEST_WEBHOOK_URL are all optional: a lead is validated,
+      # stored and listed at /admin/leads whether or not any of them is set,
+      # because submitLead() stores before it notifies. Listing them as
+      # `sync: false` put four more boxes in the blueprint's setup form, which
+      # invites filling them in to get past the form — and a made-up webhook
+      # URL POSTs a customer's name, phone number and address to a stranger on
+      # every enquiry.
+      #
+      # Add them in the Render dashboard once you have real values. The email
+      # channel is the one worth having: without any alert, an enquiry is seen
+      # only when somebody opens the admin panel.
 
 databases:
   - name: hvac-db
