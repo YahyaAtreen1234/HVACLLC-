@@ -339,19 +339,56 @@ how to restore it. If you use a disk for photos, back that up too.
 Copy `.env.example` to `.env.local` (and set the same values in your host).
 After deploying, hit `/api/health` — it lists whatever is still missing.
 
-| Variable                      | Required        | Purpose                                     |
-| ----------------------------- | --------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`        | production      | Canonical URLs, Open Graph, sitemap, schema  |
-| `LEADS_DB_PATH`               | optional        | SQLite location (default `.data/leads.db`)   |
-| `SERVICE_REQUEST_WEBHOOK_URL` | one channel     | POST leads as JSON to Zapier/Make/n8n/CRM    |
-| `RESEND_API_KEY`              | one channel     | Email notification via Resend                |
-| `NOTIFY_FROM_EMAIL`           | with Resend     | Verified sending address                     |
-| `NOTIFY_TO_EMAIL`             | with Resend     | Office inbox (comma-separated for several)   |
-| `ADMIN_API_TOKEN`             | to use admin    | Bearer token; unset = admin endpoints closed |
-| `IP_HASH_SALT`                | recommended     | Stable IP hashing across restarts            |
+**Exactly one variable is mandatory: `DATABASE_URL`.** Everything else is
+optional — the site boots without it, and `/api/health` reports what is missing
+rather than refusing to start. Leave an optional variable **unset**; do not
+invent a value to fill the field.
 
-Configure **at least one notification channel**. Without one, leads are still
-stored safely — but nobody is told they arrived, and `/api/health` says so.
+| Variable                      | Needed when                | Purpose                                      |
+| ----------------------------- | -------------------------- | -------------------------------------------- |
+| `DATABASE_URL`                | **always**                 | Leads and all editable content. Nothing works without it |
+| `DATABASE_SSL_NO_VERIFY`      | self-signed DB cert only   | `1` keeps TLS but stops verifying the peer    |
+| `NEXT_PUBLIC_SITE_URL`        | production                 | Canonical URLs, Open Graph, sitemap, schema   |
+| `BLOB_READ_WRITE_TOKEN`       | serverless hosts           | Photo uploads. Vercel's filesystem is read-only, so uploads fail without it |
+| `UPLOADS_PATH`                | only without a Blob token  | Local upload directory (default `.data/uploads`) |
+| `ADMIN_USERNAME`              | to use the panel           | Panel login (default `admin`)                 |
+| `ADMIN_PASSWORD_HASH`         | to use the panel           | scrypt hash; unset = every login refused      |
+| `ADMIN_SESSION_SECRET`        | to use the panel           | Signs the session cookie                      |
+| `ADMIN_API_TOKEN`             | to use the leads API       | Bearer token; unset = those endpoints closed  |
+| `IP_HASH_SALT`                | recommended                | Stable IP hashing across restarts             |
+| `SERVICE_REQUEST_WEBHOOK_URL` | optional                   | POST each lead as JSON to Zapier/Make/n8n/CRM |
+| `RESEND_API_KEY`              | optional                   | Email notification via Resend                 |
+| `NOTIFY_FROM_EMAIL`           | with `RESEND_API_KEY`      | Verified sending address                      |
+| `NOTIFY_TO_EMAIL`             | with `RESEND_API_KEY`      | Office inbox (comma-separated for several)    |
+
+### Lead notification is optional, and both channels are
+
+`SERVICE_REQUEST_WEBHOOK_URL` and the `RESEND_*` group are two ways to **push a
+copy of a lead outward** once it has already been saved. Neither is part of
+receiving a lead:
+
+```
+form / API  ->  submitLead()  ->  PostgreSQL      <- the lead is now safe
+                                      |
+                                      +-> webhook  (optional, may fail)
+                                      +-> email    (optional, may fail)
+```
+
+`submitLead()` stores first and notifies second, on purpose. A missing or broken
+channel is recorded against the lead and shown in the admin list; it can never
+fail the submission or lose a customer. With no channel configured at all, the
+form still returns success and the lead still appears at `/admin/leads`.
+
+> **Do not point the webhook at this site's own `/api/service-requests`.** That
+> route is lead *intake*. Aiming the outbound notification at it makes the site
+> re-submit every lead to itself, which stores a duplicate, which notifies
+> again — a loop that stops only when the rate limiter trips. The form already
+> uses the internal backend; the webhook exists solely to reach a *different*
+> system.
+
+The real consequence of configuring neither: a lead is only seen when somebody
+opens the admin panel. For 24/7 emergency work that is a lost customer, so
+connect email unless the panel is genuinely being watched.
 
 ---
 

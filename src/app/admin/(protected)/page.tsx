@@ -39,10 +39,17 @@ export default async function AdminOverview() {
             Nobody is being notified about new leads
           </p>
           <p className="mt-1.5 text-sm leading-relaxed text-amber-800">
-            Requests are being stored safely and appear here, but no email or
-            webhook is configured, so they will only be seen if someone opens
-            this page. Set <code>SERVICE_REQUEST_WEBHOOK_URL</code> or the{" "}
-            <code>RESEND_*</code> variables to fix that.
+            Requests are being stored safely and appear here — nothing is being
+            lost. But with no alert configured they are seen only when someone
+            opens this page, which for emergency calls can mean finding out too
+            late. Setting this up is optional; for 24/7 work it is worth doing.
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-amber-800">
+            The simplest fix is email: set <code>RESEND_API_KEY</code>,{" "}
+            <code>NOTIFY_FROM_EMAIL</code> and <code>NOTIFY_TO_EMAIL</code>. If
+            leads should land in a CRM or an automation instead, point{" "}
+            <code>SERVICE_REQUEST_WEBHOOK_URL</code> at that system&apos;s intake
+            URL.
           </p>
         </Card>
       ) : null}

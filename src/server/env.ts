@@ -129,8 +129,12 @@ export function configurationWarnings(): string[] {
   }
 
   if (!configuredChannels().length) {
+    // Advisory, not a misconfiguration: both channels are optional and leads
+    // are stored either way. Worded so it cannot be read as a missing required
+    // variable — someone filling SERVICE_REQUEST_WEBHOOK_URL with a made-up URL
+    // to silence this would be strictly worse off than leaving it empty.
     warnings.push(
-      "No notification channel configured — leads are stored but nobody is told about them. Set SERVICE_REQUEST_WEBHOOK_URL or the RESEND_* variables.",
+      "No lead alerts configured (optional) — requests are still stored and listed at /admin/leads, but nobody is told they arrived. Recommended: RESEND_API_KEY + NOTIFY_FROM_EMAIL + NOTIFY_TO_EMAIL. Only set SERVICE_REQUEST_WEBHOOK_URL if you have a real CRM or automation endpoint to receive them.",
     );
   }
   if (!env.adminToken) {
