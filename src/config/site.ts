@@ -4,12 +4,27 @@
  */
 import { business } from "./business";
 
+/**
+ * The canonical production origin.
+ *
+ * Hardcoded as the default rather than left to an environment variable. It is
+ * a public fact, not a secret, and it is the single value every canonical tag,
+ * the sitemap, robots.txt, the Open Graph URLs and `metadataBase` are built
+ * from — so an unset variable does not degrade the site, it publishes the
+ * wrong address everywhere at once.
+ *
+ * This previously fell back to example.com. A launch with that in place would
+ * have told search engines that every page's canonical home was a domain the
+ * business does not own, which is the one SEO mistake that is hard to undo.
+ *
+ * NEXT_PUBLIC_SITE_URL still overrides it, which is what a preview deployment
+ * or a domain change needs.
+ */
+const PRODUCTION_ORIGIN = "https://northstarhvacllc.us";
+
 export const site = {
-  /**
-   * Canonical origin, no trailing slash. Used for metadata, sitemap and
-   * structured data. TODO: set NEXT_PUBLIC_SITE_URL in the deploy environment.
-   */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.example.com").replace(
+  /** Canonical origin, no trailing slash. */
+  url: (process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_ORIGIN).replace(
     /\/$/,
     "",
   ),

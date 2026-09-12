@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   let database: "ok" | "error" = "ok";
-  let databaseError: string | null = null;
 
   try {
     // Also forces the migrations to run, so a schema problem shows up here
@@ -26,7 +25,16 @@ export async function GET() {
     await query("SELECT 1");
   } catch (error) {
     database = "error";
-    databaseError = error instanceof Error ? error.message : String(error);
+
+    // Logged, never returned. This route is unauthenticated and reachable by
+    // anyone, and a driver's connection error carries infrastructure detail —
+    // the database hostname on a DNS failure, host and port on a refused
+    // connection, the role name on a rejected login. None of that is a
+    // credential, but none of it belongs in a public response either, and the
+    // operator can read it in the platform logs where it is actually useful.
+    //
+    // The status code is what an uptime monitor needs; the reason is not.
+    console.error("[health] database check failed:", error);
   }
 
   const warnings = configurationWarnings();
@@ -38,7 +46,6 @@ export async function GET() {
       time: new Date().toISOString(),
       checks: {
         database,
-        ...(databaseError ? { databaseError } : {}),
         notificationChannels: configuredChannels(),
       },
       warnings,
