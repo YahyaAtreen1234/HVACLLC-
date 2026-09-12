@@ -13,6 +13,23 @@ interface PageMetaInput {
   index?: boolean;
 }
 
+/**
+ * The share card, matching the route Next generates from
+ * src/app/opengraph-image.tsx and the size that file declares.
+ *
+ * The path is relative on purpose: `metadataBase` in the root layout turns it
+ * into an absolute URL on the production origin. Writing it absolute here
+ * would hardcode the domain in a second place and let the two drift.
+ *
+ * Width and height are declared because platforms reserve the space before the
+ * image finishes downloading — without them the card reflows as it loads.
+ */
+const OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+} as const;
+
 /** Builds consistent per-page metadata (canonical URL, OG and Twitter cards). */
 export function pageMetadata({
   title,
@@ -33,11 +50,20 @@ export function pageMetadata({
       siteName: business.name,
       locale: site.locale,
       type: "website",
+      // Named explicitly even though src/app/opengraph-image.tsx exists.
+      // Declaring an openGraph object here replaces the file convention's
+      // contribution rather than merging with it, so the generated card was
+      // being built and then dropped from every page that used this helper —
+      // which is all of them. Relative, so metadataBase makes it absolute.
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} | ${business.name}`,
       description,
+      // A large card with no image is downgraded to a plain text row, which is
+      // the whole reason the card looked broken when shared.
+      images: [OG_IMAGE.url],
     },
   };
 }

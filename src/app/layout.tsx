@@ -54,8 +54,16 @@ export const metadata: Metadata = {
     title: site.defaultTitle,
     description: site.defaultDescription,
     url: site.url,
+    // Declaring an openGraph object here replaces what the generated
+    // opengraph-image would have contributed, rather than merging with it. The
+    // image has to be named for any route that falls back to this metadata.
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    card: "summary_large_image",
+    // A large card with no image is downgraded to a bare text row.
+    images: ["/opengraph-image"],
+  },
   // TODO: add verification tokens once Google Search Console is set up.
 };
 
