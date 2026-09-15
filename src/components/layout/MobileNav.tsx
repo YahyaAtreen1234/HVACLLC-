@@ -107,7 +107,7 @@ export function MobileNav() {
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label="Open menu"
-        className="flex size-11 items-center justify-center rounded-lg border-2 border-ink-900/12 bg-white text-ink-900 transition-colors hover:border-ink-900/25 lg:hidden"
+        className="flex size-11 items-center justify-center rounded-lg border-2 border-ink-900/12 bg-white text-ink-900 transition-colors hover:border-ink-900/25 xl:hidden"
       >
         <Icon name="menu" size={22} />
       </button>
@@ -117,7 +117,7 @@ export function MobileNav() {
         onClick={() => setOpen(false)}
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 z-50 bg-ink-950/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+          "fixed inset-0 z-50 bg-ink-950/60 backdrop-blur-sm transition-opacity duration-300 xl:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
@@ -133,7 +133,7 @@ export function MobileNav() {
         // removing the closed panel from the accessibility tree and tab order.
         inert={!open}
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-sand-50 shadow-2xl transition-transform duration-300 ease-out lg:hidden",
+          "fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-sand-50 shadow-2xl transition-transform duration-300 ease-out xl:hidden",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >

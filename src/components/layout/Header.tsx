@@ -97,7 +97,7 @@ export function Header({ areaSummary }: { areaSummary: string }) {
       {/* Utility bar — desktop only, low-priority information. */}
       <div className="on-dark hidden bg-ink-950 text-ink-200 lg:block">
         <Container size="wide">
-          <div className="flex items-center justify-between py-2 text-xs">
+          <div className="flex items-center justify-between py-1.5 text-xs">
             <p className="flex items-center gap-2">
               <Icon name="map-pin" size={14} className="text-chill-400" />
               {/* areaSummary already reads "<City> and surrounding cities". */}
@@ -129,26 +129,34 @@ export function Header({ areaSummary }: { areaSummary: string }) {
       {/* Main bar */}
       <div className="border-b border-ink-900/8 bg-white/95 backdrop-blur-md">
         <Container size="wide">
-          <div className="flex items-center justify-between gap-4 py-3 lg:py-4">
+          {/*
+            `min-w-0` on the flex children below, plus `whitespace-nowrap` on
+            the things that must never break, is what keeps this bar short.
+            Without it the phone number wrapped onto two lines and the CTA onto
+            three, and since every child stretches to the tallest one, that
+            alone drove the bar to 110px at a 1280px laptop width — a third of
+            the fold spent on a strip the visitor has already read.
+          */}
+          <div className="flex items-center justify-between gap-3 py-2 lg:gap-4 lg:py-2.5">
             <Logo />
 
             <DesktopNav className="ml-auto" />
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {/* Desktop: number as a readable click-to-call block. */}
               <a
                 href={telHref}
                 data-analytics="phone-call"
-                className="hidden items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-ink-900/5 md:flex"
+                className="hidden items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-colors hover:bg-ink-900/5 md:flex"
               >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-flame-50 text-flame-600">
-                  <Icon name="phone" size={18} />
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-flame-50 text-flame-600">
+                  <Icon name="phone" size={16} />
                 </span>
                 <span className="leading-tight">
-                  <span className="block text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-500">
+                  <span className="block text-[0.625rem] font-semibold uppercase tracking-wider text-ink-500">
                     {cta.secondary}
                   </span>
-                  <span className="block font-display text-base font-bold text-ink-950">
+                  <span className="block font-display text-[0.9375rem] font-bold text-ink-950">
                     {phoneDisplay}
                   </span>
                 </span>
@@ -159,12 +167,16 @@ export function Header({ areaSummary }: { areaSummary: string }) {
                 href={telHref}
                 aria-label={`Call ${phoneDisplay}`}
                 data-analytics="phone-call"
-                className="flex size-11 items-center justify-center rounded-lg bg-ink-900 text-white transition-colors hover:bg-ink-800 md:hidden"
+                className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white transition-colors hover:bg-ink-800 md:hidden"
               >
                 <Icon name="phone" size={20} />
               </a>
 
-              <Button href="/contact" variant="primary" className="max-lg:hidden">
+              <Button
+                href="/contact"
+                variant="primary"
+                className="whitespace-nowrap max-xl:hidden"
+              >
                 {cta.primary}
               </Button>
 
