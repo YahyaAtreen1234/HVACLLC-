@@ -44,8 +44,15 @@ export const business = {
    * checking against the actual registration.
    */
   legalName: "NorthStar HVAC LLC",
-  /** The short service list from the business card, sitting under the logo. */
-  serviceLine: "Heating · Cooling · Installation · Repair",
+  /**
+   * The short service list sitting under the logo, and on the share card.
+   *
+   * Separated with · to match the other lists the site sets this way — the
+   * credentials strip reads "Licensed · Bonded · Insured" in the same
+   * uppercase, letterspaced treatment. Commas would read as a different kind
+   * of list in the same visual slot.
+   */
+  serviceLine: "Heating · Cooling · Refrigeration",
   /**
    * Currently rendered nowhere. The hero sentence that used to end with it now
    * carries the business's own wording instead. Kept because a one-line
