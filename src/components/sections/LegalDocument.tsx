@@ -1,5 +1,5 @@
 import { Container, Section } from "@/components/ui/Container";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 
 export interface LegalSectionContent {
   heading: string;
@@ -36,12 +36,12 @@ export function LegalDocument({
         <p className="text-sm text-ink-600">Last updated: {updatedLabel}</p>
 
         {reviewNotice ? (
-          <Alert tone="info" title="Template — needs review before launch" className="mt-6">
+          <BuildNote title="Template — needs review before launch" className="mt-6">
             This document is a starting point written for a US HVAC contractor.
             It is not legal advice. Have a qualified attorney review and adapt it
             to the business, its state and the tools it actually uses before the
             site goes live, and fill in every TODO.
-          </Alert>
+          </BuildNote>
         ) : null}
 
         <p className="mt-8 text-lg leading-relaxed text-ink-800">{intro}</p>

@@ -12,7 +12,7 @@ import { EmergencyCta } from "@/components/cta/EmergencyCta";
 import { CtaBand } from "@/components/cta/CtaBand";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 
 import {
   getServiceArea,
@@ -105,12 +105,12 @@ export default async function ServiceAreaPage({
       <Section>
         <Container>
           {area.isPlaceholder ? (
-            <Alert tone="info" className="mb-10">
+            <BuildNote className="mb-10">
               <strong>{area.city} is placeholder data.</strong> Confirm this is
               a town the office actually dispatches to, then edit it at{" "}
               <code>/admin/areas</code>. Until then this page is set to
               noindex so it cannot rank for a market you do not serve.
-            </Alert>
+            </BuildNote>
           ) : null}
 
           <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">

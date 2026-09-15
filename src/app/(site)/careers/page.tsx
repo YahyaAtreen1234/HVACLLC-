@@ -5,7 +5,7 @@ import { PageHero } from "@/components/sections/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Icon } from "@/components/ui/Icon";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { CtaBand } from "@/components/cta/CtaBand";
 
 import { jobOpenings, jobPerks } from "@/data/jobs";
@@ -159,13 +159,13 @@ export default function CareersPage() {
                 <Icon name="arrow-right" size={16} />
               </Link>
 
-              <Alert tone="info" className="mt-8 text-left">
+              <BuildNote className="mt-8 text-left">
                 <strong>Got a specific vacancy?</strong> Add it to{" "}
                 <code>src/data/jobs.ts</code> and it will be listed here. The
                 green hiring strip and the wording above both follow{" "}
                 <code>business.hiring.active</code> — turn that off and they
                 disappear together, and the page returns to noindex.
-              </Alert>
+              </BuildNote>
             </div>
           )}
         </Container>

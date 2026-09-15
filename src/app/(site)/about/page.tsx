@@ -4,7 +4,7 @@ import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { Icon } from "@/components/ui/Icon";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { TrustBadgeRow } from "@/components/cards/TrustBadge";
 import { ProcessSteps } from "@/components/sections/ProcessSteps";
 import { TeamSection } from "@/components/sections/TeamSection";
@@ -78,14 +78,17 @@ export default function AboutPage() {
                 written generically — it is the reason a homeowner picks you
                 over the contractor with the same list of services.
               */}
-              <Alert tone="info" title="Add the founding story here" className="mt-8">
+              <BuildNote title="Add the founding story here" className="mt-8">
                 Replace this block in{" "}
-                <code>src/app/about/page.tsx</code> with the real history: who
-                started {business.name} and in what year, what they were doing
-                before, and what made them go out on their own. Two or three
-                honest paragraphs beat any amount of polished filler — this is
-                the part visitors actually read.
-              </Alert>
+                <code>src/app/(site)/about/page.tsx</code>. The{" "}
+                <code>(site)</code> route group is part of that path — drop it
+                and you define <code>/about</code> a second time, which breaks
+                the build. Write the real history: who started {business.name}{" "}
+                and in what year, what they were doing before, and what made
+                them go out on their own. Two or three honest paragraphs beat
+                any amount of polished filler — this is the part visitors
+                actually read.
+              </BuildNote>
 
               <dl className="mt-10 grid gap-6 sm:grid-cols-3">
                 <div>
@@ -175,13 +178,13 @@ export default function AboutPage() {
           {hasCredentials ? (
             <TrustBadgeRow className="mt-10" />
           ) : (
-            <Alert tone="info" title="Not published yet" className="mt-10">
+            <BuildNote title="Not published yet" className="mt-10">
               No licence number, insurance status or certification has been
               entered yet, so nothing is claimed on this page. Add the real
               values to <code>business.credentials</code> in{" "}
               <code>src/config/business.ts</code> and they will appear here and
               in the trust badges site-wide.
-            </Alert>
+            </BuildNote>
           )}
         </Container>
       </Section>

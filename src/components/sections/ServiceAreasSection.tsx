@@ -3,7 +3,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Icon } from "@/components/ui/Icon";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { PrimaryCta } from "@/components/cta/CtaButtons";
 import { getServiceAreas, getServiceAreasArePlaceholder } from "@/server/content/read";
 import { business } from "@/config/business";
@@ -31,13 +31,13 @@ export async function ServiceAreasSection({
         ) : null}
 
         {await getServiceAreasArePlaceholder() ? (
-          <Alert tone="info" title="Placeholder service areas" className="mt-8">
+          <BuildNote title="Placeholder service areas" className="mt-8">
             Some of these city names are stand-ins. Edit them at{" "}
             <code>/admin/areas</code> so they match the towns the office
             actually dispatches to — this list feeds each city page and the
             structured data search engines use for local results. Stand-in
             cities are set to noindex until you confirm them.
-          </Alert>
+          </BuildNote>
         ) : null}
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

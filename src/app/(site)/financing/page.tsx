@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/sections/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { Icon } from "@/components/ui/Icon";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { CtaBand } from "@/components/cta/CtaBand";
@@ -92,18 +92,39 @@ export default async function FinancingPage() {
               </p>
             </>
           ) : (
-            <Alert tone="info" title="Financing details not published yet">
-              No lender, rate or payment term has been entered, so none is shown
-              here. Quoting consumer credit terms is regulated advertising, and
-              publishing a rate that has not been confirmed in writing by the
-              lender creates real legal exposure.
-              <br />
-              <br />
-              To publish this section: set <code>financingOffered</code>,{" "}
-              <code>financingPartner</code> and <code>financingOptions</code> in{" "}
-              <code>src/data/financing.ts</code>. Until then, call{" "}
-              {business.phone.display} and we will talk through the options.
-            </Alert>
+            <>
+              {/*
+                Said to the visitor, so this section is never blank. The build
+                note below it is development-only, and without something here a
+                customer who clicked "Financing" would land on an empty panel.
+              */}
+              <p className="text-lg leading-relaxed text-ink-800">
+                We have not published financing terms on this page yet. Rates
+                and terms are the lender&apos;s to set, and we would rather say
+                nothing than quote you a figure that has not been confirmed in
+                writing.
+              </p>
+              <p className="mt-4 text-lg leading-relaxed text-ink-800">
+                Call {business.phone.display} and we will walk through the
+                options that apply to your job, what they cost, and what they
+                would mean month to month.
+              </p>
+
+              <BuildNote
+                title="Financing details not published yet"
+                className="mt-8"
+              >
+                No lender, rate or payment term has been entered, so the visitor
+                message above is shown instead. Quoting consumer credit terms is
+                regulated advertising, and publishing a rate that has not been
+                confirmed in writing by the lender creates real legal exposure.
+                <br />
+                <br />
+                To publish this section: set <code>financingOffered</code>,{" "}
+                <code>financingPartner</code> and <code>financingOptions</code>{" "}
+                in <code>src/data/financing.ts</code>.
+              </BuildNote>
+            </>
           )}
         </Container>
       </Section>

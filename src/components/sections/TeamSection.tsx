@@ -2,7 +2,7 @@ import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { Avatar } from "@/components/ui/Avatar";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/ui/Reveal";
 import {
@@ -80,12 +80,12 @@ export async function TeamSection({
         />
 
         {await getTeamIsPlaceholder() ? (
-          <Alert tone="info" title="Placeholder team members" className="mt-8">
+          <BuildNote title="Placeholder team members" className="mt-8">
             The names and bios below are stand-ins. Replace them in{" "}
             <code>src/data/team.ts</code> and add real photos to{" "}
             <code>/public/images/team/</code> — publishing invented staff on a
             page whose whole job is trust defeats the point of the page.
-          </Alert>
+          </BuildNote>
         ) : null}
 
         <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

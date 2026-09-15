@@ -5,7 +5,7 @@ import { PageHero } from "@/components/sections/PageHero";
 import { Container, Section } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Icon } from "@/components/ui/Icon";
-import { Alert } from "@/components/ui/Alert";
+import { BuildNote } from "@/components/ui/BuildNote";
 import { CtaBand } from "@/components/cta/CtaBand";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -49,13 +49,13 @@ export default async function MaintenancePlansPage() {
       <Section>
         <Container>
           {planPricesArePlaceholder ? (
-            <Alert tone="info" title="Pricing not set" className="mb-10">
+            <BuildNote title="Pricing not set" className="mb-10">
               No plan price is published yet, so every tier shows{" "}
               <strong>Call for pricing</strong>. Set real figures in{" "}
               <code>src/data/plans.ts</code> before launch — and only list a
               benefit the office will actually honour, because each one is a
               promise a customer can hold you to.
-            </Alert>
+            </BuildNote>
           ) : null}
 
           <ul className="grid items-start gap-6 lg:grid-cols-3">
