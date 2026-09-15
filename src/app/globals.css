@@ -6,6 +6,20 @@
    Tailwind v4 generates utilities from these (bg-ink-900, font-display, ...).
 --------------------------------------------------------------------------- */
 @theme {
+  /* Breakpoints --------------------------------------------------------- */
+  /*
+   * `roomy` is the width at which the whole header bar fits at once: the
+   * wordmark and its service line, seven navigation links, the written-out
+   * phone number and the CTA. It is measured, not chosen — below 1150px that
+   * row runs past the viewport, and because the body clips horizontal overflow
+   * the right-hand end is cut off rather than pushed anywhere reachable.
+   *
+   * Named rather than written as an arbitrary variant because `max-[1149px]`
+   * stacked after `lg:` did not compile, and the failure was silent: the class
+   * simply never appeared in the stylesheet and the element stayed visible.
+   */
+  --breakpoint-roomy: 1150px;
+
   /* Typography ---------------------------------------------------------- */
   --font-display: var(--font-archivo), "Archivo", ui-sans-serif, system-ui,
     sans-serif;

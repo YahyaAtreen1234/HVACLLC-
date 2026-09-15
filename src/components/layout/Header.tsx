@@ -143,31 +143,53 @@ export function Header({ areaSummary }: { areaSummary: string }) {
             <DesktopNav className="ml-auto" />
 
             <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* Desktop: number as a readable click-to-call block. */}
+              {/*
+                The number is written out at every width from md up, including
+                the tight band where the navigation appears.
+
+                It was briefly reduced to an icon between lg and xl to buy room.
+                That is the wrong thing to trade away on a contractor's site:
+                the phone number is the conversion, and a visitor should be able
+                to read it without tapping anything. Everything in this row
+                gives up a little size below xl instead — the number, its label,
+                the nav labels and the service line under the wordmark — so all
+                of it stays on the bar.
+              */}
               <a
                 href={telHref}
                 data-analytics="phone-call"
-                className="hidden items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-colors hover:bg-ink-900/5 md:flex"
+                className="hidden items-center gap-1.5 whitespace-nowrap rounded-lg px-1.5 py-1.5 transition-colors hover:bg-ink-900/5 md:flex lg:max-roomy:hidden xl:gap-2 xl:px-2.5"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-flame-50 text-flame-600">
-                  <Icon name="phone" size={16} />
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-flame-50 text-flame-600 xl:size-8">
+                  <Icon name="phone" size={15} />
                 </span>
                 <span className="leading-tight">
-                  <span className="block text-[0.625rem] font-semibold uppercase tracking-wider text-ink-500">
+                  <span className="block text-[0.5625rem] font-semibold uppercase tracking-wider text-ink-500 xl:text-[0.625rem]">
                     {cta.secondary}
                   </span>
-                  <span className="block font-display text-[0.9375rem] font-bold text-ink-950">
+                  <span className="block font-display text-[0.8125rem] font-bold text-ink-950 xl:text-[0.9375rem]">
                     {phoneDisplay}
                   </span>
                 </span>
               </a>
 
-              {/* Mobile: compact call button, always within thumb reach. */}
+              {/*
+                The number as a call button: on phones, and in the 1024–1149
+                band where the bar cannot hold it written out.
+
+                Measured rather than guessed. With the service line already
+                stepping aside there, the wordmark, seven links, the written
+                number and the CTA still ran 51px past a 1024px viewport, and
+                every remaining lever — nav size, padding, gaps — costs
+                legibility for a few pixels each. Losing the written number for
+                125 of them is the one trade that pays, and it is confined to a
+                125px-wide band rather than every laptop under 1280.
+              */}
               <a
                 href={telHref}
                 aria-label={`Call ${phoneDisplay}`}
                 data-analytics="phone-call"
-                className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white transition-colors hover:bg-ink-800 md:hidden"
+                className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white transition-colors hover:bg-ink-800 md:hidden lg:max-roomy:flex lg:max-roomy:size-10"
               >
                 <Icon name="phone" size={20} />
               </a>
@@ -175,7 +197,7 @@ export function Header({ areaSummary }: { areaSummary: string }) {
               <Button
                 href="/contact"
                 variant="primary"
-                className="whitespace-nowrap max-xl:hidden"
+                className="whitespace-nowrap max-lg:hidden"
               >
                 {cta.primary}
               </Button>
