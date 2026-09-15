@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Icon } from "@/components/ui/Icon";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { business } from "@/config/business";
-import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
+import { getFeaturedServices } from "@/server/content/read";
 
 /**
  * Home page hero.
@@ -16,15 +16,14 @@ import { getFeaturedServices, getServiceAreas } from "@/server/content/read";
  * carries no meaning for a screen reader.
  */
 export async function Hero() {
-  const areas = await getServiceAreas();
-  // Only confirmed towns are named. This previously took the first two areas
-  // regardless, so the hero read "Phoenix & Scottsdale" while Scottsdale was
-  // deliberately held out of search results as unconfirmed coverage.
+  // The city the business operates from — the same sentence the header uses.
   //
-  // Derived rather than written into the sentence, so the wording survives a
-  // change of city without anyone remembering to edit it here.
-  const confirmed = areas.filter((area) => !area.isPlaceholder);
-  const areaSummary = `${confirmed[0]?.city ?? business.address.city} and surrounding cities`;
+  // Derived from the business config rather than the service-area list: taking
+  // the first confirmed area read correctly only while Phoenix was the sole
+  // confirmed town, and reordering the coverage list turned the hero into
+  // "across Sun City and surrounding cities" without a word of copy changing.
+  // Still derived rather than hardcoded, so it survives a change of city.
+  const areaSummary = `${business.address.city} and surrounding cities`;
 
   return (
     <section className="relative overflow-hidden bg-sand-50">

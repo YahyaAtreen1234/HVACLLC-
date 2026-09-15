@@ -49,29 +49,49 @@ export async function ServiceAreasSection({
               delay={index * 80}
               className="scroll-mt-32"
             >
-              <div className="relative flex h-full flex-col rounded-2xl border border-ink-900/8 bg-white p-5 shadow-card transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0">
-                <span className="flex items-center gap-2 font-display text-lg font-bold text-ink-950">
-                  <Icon name="map-pin" size={18} className="text-flame-600" />
+              <div className="area-ribbon flex h-full flex-col items-center rounded-2xl p-6 text-center shadow-card transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0">
+                {/*
+                  The drifting layer. Offset per card so the eight ribbons are
+                  at different points in the same ten-second cycle — in step
+                  they would read as one flashing block rather than ambient
+                  movement. Negative delays start each one mid-cycle instead of
+                  holding it still, so the row is already in motion on arrival.
+                */}
+                <span
+                  aria-hidden="true"
+                  className="area-ribbon-glow"
+                  style={{ animationDelay: `-${(index % 8) * 1.25}s` }}
+                />
+
+                <Icon
+                  name="map-pin"
+                  size={20}
+                  className="text-flame-500"
+                  aria-hidden="true"
+                />
+
+                <span className="mt-2 font-display text-xl font-bold text-white">
                   <Link
                     href={`/service-areas/${area.slug}`}
-                    className="after:absolute after:inset-0 after:content-[''] hover:text-flame-600"
+                    className="after:absolute after:inset-0 after:content-[''] hover:text-flame-300"
                   >
                     {area.city}
                   </Link>
-                  <span className="text-sm font-semibold text-ink-500">
-                    {area.state}
-                  </span>
+                </span>
+
+                <span className="mt-0.5 text-sm font-semibold tracking-wide text-chill-300">
+                  {area.state}
                 </span>
 
                 {area.neighborhoods?.length ? (
-                  <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                  <p className="mt-2 text-sm leading-relaxed text-white/70">
                     {area.neighborhoods.join(" · ")}
                   </p>
                 ) : null}
 
-                <span className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-semibold text-flame-600">
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-4 font-display text-sm font-semibold text-flame-300">
                   HVAC service in {area.city}
-                  <Icon name="arrow-right" size={15} />
+                  <Icon name="arrow-right" size={15} aria-hidden="true" />
                 </span>
               </div>
             </Reveal>

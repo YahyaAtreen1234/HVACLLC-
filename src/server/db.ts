@@ -14,7 +14,7 @@ import { env } from "./env";
  * server was restarted.
  */
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 /**
  * Advisory lock id for migrations. Any fixed number works; it only has to be
@@ -222,6 +222,64 @@ async function migrate(client: PoolClient): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_reviews_sort
         ON reviews (sort_order, review_date DESC);
     `);
+  }
+
+  // Migration 3 — the towns the office actually dispatches to.
+  //
+  // The live database held one confirmed area, Phoenix, so /service-areas
+  // listed a single city and the sitemap carried a single city page. The other
+  // seven towns below were supplied by the business as the real coverage area,
+  // which makes them confirmed rather than seed data: is_placeholder is FALSE,
+  // so each one is indexable and gets its own city page.
+  //
+  // Written as a migration rather than a seed because the database is already
+  // populated — a seeder that only fills an empty table would never run here.
+  //
+  // Two properties matter, since this executes on every boot until the version
+  // row is written and the office can edit these rows in /admin/areas
+  // afterwards:
+  //
+  //   • Keyed on `slug`, not `id`. Phoenix already exists under an id this code
+  //     cannot know, so an id-based upsert would have inserted a second
+  //     Phoenix rather than leaving the existing row alone.
+  //   • Insert-only. `WHERE NOT EXISTS` means a town already present is
+  //     untouched, so a name, note or neighbourhood list edited in the admin
+  //     panel is never reverted by a later deploy.
+  if (current < 3) {
+    const now = new Date().toISOString();
+
+    // Order as supplied by the business; sort_order drives the on-page order.
+    const areas: Array<[string, string, number]> = [
+      ["Sun City", "sun-city", 1],
+      ["Peoria", "peoria", 2],
+      ["Surprise", "surprise", 3],
+      ["Goodyear", "goodyear", 4],
+      ["Buckeye", "buckeye", 5],
+      ["Phoenix", "phoenix", 6],
+      ["Glendale", "glendale", 7],
+      ["Avondale", "avondale", 8],
+    ];
+
+    for (const [city, slug, order] of areas) {
+      await client.query(
+        `INSERT INTO service_areas
+           (id, city, state, slug, neighborhoods, note, published, sort_order,
+            is_placeholder, updated_at)
+         SELECT $1, $2, 'AZ', $3, '[]'::jsonb, '', TRUE, $4, FALSE, $5
+         WHERE NOT EXISTS (
+           SELECT 1 FROM service_areas WHERE slug = $3
+         )`,
+        [`area-${slug}`, city, slug, order, now],
+      );
+    }
+
+    // Phoenix predates this migration and keeps whatever the office has edited
+    // into it, but its position in the list is this migration's to set — left
+    // alone it would sort by an order chosen before the other seven existed.
+    await client.query(
+      "UPDATE service_areas SET sort_order = $1 WHERE slug = 'phoenix'",
+      [6],
+    );
   }
 
   await client.query(

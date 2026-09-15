@@ -264,6 +264,63 @@
   }
 }
 
+/*
+ * Service-area ribbons.
+ *
+ * A navy ground with two coloured pools drifting across it on a ten-second
+ * cycle, staggered per card so the row breathes rather than pulsing in unison.
+ *
+ * The movement is deliberately slow and low-contrast: this sits behind eight
+ * town names that are the point of the section, and anything faster reads as a
+ * distraction on a page someone is scanning for their own town. The glow is a
+ * separate layer at a negative z-index under an isolated stacking context, so
+ * it can never paint over the text — white on this navy stays above 12:1
+ * whatever position the drift is in.
+ */
+@utility area-ribbon {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: radial-gradient(
+    125% 140% at 50% 0%,
+    #08356f 0%,
+    #001c41 52%,
+    #001127 100%
+  );
+}
+
+@utility area-ribbon-glow {
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      38% 38% at 30% 32%,
+      rgb(238 96 12 / 0.58),
+      transparent 70%
+    ),
+    radial-gradient(
+      34% 34% at 72% 68%,
+      rgb(53 182 230 / 0.34),
+      transparent 70%
+    );
+  animation: area-drift 10s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes area-drift {
+  0% {
+    transform: translate3d(-7%, -5%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, 4%, 0) scale(1.14);
+  }
+  100% {
+    transform: translate3d(-3%, 6%, 0) scale(1.05);
+  }
+}
+
 /* Route changes: a short fade so a navigation is not a hard cut. */
 @utility page-enter {
   animation: page-in 0.35s ease-out both;

@@ -7,7 +7,7 @@ import { PlaceholderNotice } from "@/components/dev/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { localBusinessSchema } from "@/lib/seo";
 import { business } from "@/config/business";
-import { getServiceAreas } from "@/server/content/read";
+
 
 /**
  * Chrome for the public marketing site.
@@ -33,20 +33,18 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Read once here so the client Header does not need database access.
+  // The city the business operates from, not whichever service area happens to
+  // sort first.
   //
-  // Only confirmed towns are named. The previous version listed the first
-  // three areas regardless, which put Scottsdale and Mesa in the header of
-  // every page while those same towns were deliberately kept out of search
-  // results as unconfirmed — the site was advertising coverage it was
-  // simultaneously refusing to claim to Google.
-  const confirmed = (await getServiceAreas()).filter(
-    (area) => !area.isPlaceholder,
-  );
-
-  const areaSummary = confirmed.length
-    ? `${confirmed[0].city} and surrounding cities`
-    : `${business.address.city} and surrounding cities`;
+  // This used to read `confirmed[0].city`, which gave the right answer only
+  // because Phoenix was the single confirmed town and everything else was seed
+  // data. Confirming the real coverage list put Sun City at position one, and
+  // the header immediately started announcing "Serving Sun City and
+  // surrounding cities" on every page — a sentence about where the company is
+  // based, silently reassigned by a sort order.
+  //
+  // Read once here so the client Header does not need database access.
+  const areaSummary = `${business.address.city} and surrounding cities`;
 
   return (
     <>

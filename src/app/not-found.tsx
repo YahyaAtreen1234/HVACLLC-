@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { getServiceAreas } from "@/server/content/read";
+import { business } from "@/config/business";
 import NotFoundContent from "./(site)/not-found";
 
 
@@ -21,10 +21,10 @@ export const dynamic = "force-dynamic";
  * a dead end.
  */
 export default async function GlobalNotFound() {
-  const areaSummary = (await getServiceAreas())
-    .slice(0, 3)
-    .map((area) => area.city)
-    .join(", ");
+  // Matches the header on every other page. Listing the first three towns here
+  // meant the 404 announced a different coverage sentence than the rest of the
+  // site, and changed whenever the area list was reordered.
+  const areaSummary = `${business.address.city} and surrounding cities`;
 
   return (
     <>
