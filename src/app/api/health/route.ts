@@ -1,4 +1,4 @@
-import { query } from "@/server/db";
+import { query, schemaStatus } from "@/server/db";
 import { configuredChannels, configurationWarnings } from "@/server/env";
 import { json } from "@/server/http";
 
@@ -18,11 +18,17 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   let database: "ok" | "error" = "ok";
+  let schema: { applied: number; expected: number } | null = null;
 
   try {
     // Also forces the migrations to run, so a schema problem shows up here
     // rather than on a customer's first request.
     await query("SELECT 1");
+
+    // Reported because a migration that does not apply is otherwise silent:
+    // reads keep working against the old shape and the only symptom is
+    // content missing from pages. `applied` behind `expected` says so plainly.
+    schema = await schemaStatus();
   } catch (error) {
     database = "error";
 
@@ -46,6 +52,7 @@ export async function GET() {
       time: new Date().toISOString(),
       checks: {
         database,
+        schema,
         notificationChannels: configuredChannels(),
       },
       warnings,

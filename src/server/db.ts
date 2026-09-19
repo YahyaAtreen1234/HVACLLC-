@@ -418,6 +418,26 @@ export async function count(sql: string, params: unknown[] = []): Promise<number
 }
 
 /** Closes the pool. Used by tests, and for a graceful shutdown. */
+/**
+ * The migration version the database has actually reached, and the one this
+ * build expects.
+ *
+ * Reported by /api/health because the difference matters and is otherwise
+ * invisible. A migration that fails to apply does not break the site — reads
+ * carry on against the old shape — so the only symptom is content quietly
+ * missing from pages, which looks like a dozen other things. Two numbers side
+ * by side answer "did the deploy's migration run?" in one request.
+ */
+export async function schemaStatus(): Promise<{
+  applied: number;
+  expected: number;
+}> {
+  const row = await queryOne<{ version: number | null }>(
+    "SELECT MAX(version) AS version FROM schema_migrations",
+  );
+  return { applied: Number(row?.version ?? 0), expected: SCHEMA_VERSION };
+}
+
 export async function closeDb(): Promise<void> {
   const pool = globalRef.__pgPool;
   globalRef.__pgPool = undefined;
