@@ -335,6 +335,46 @@
   }
 }
 
+/*
+ * Brand wall.
+ *
+ * `brand-sweep` is the countdown under the tabs. Its duration is set inline
+ * from BRAND_ROTATE_MS so the bar and the timer cannot drift apart — one
+ * constant drives both.
+ *
+ * Both animate transform and opacity only, which the compositor handles
+ * without laying the page out again. The site-wide reduced-motion rule already
+ * collapses them, and the component stops advancing on its own in that case,
+ * so nothing is left mid-sweep.
+ */
+@utility animate-brand-sweep {
+  animation: brand-sweep linear forwards;
+}
+
+@keyframes brand-sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility animate-brand-in {
+  animation: brand-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes brand-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Route changes: a short fade so a navigation is not a hard cut. */
 @utility page-enter {
   animation: page-in 0.35s ease-out both;

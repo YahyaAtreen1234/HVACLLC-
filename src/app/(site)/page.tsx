@@ -10,6 +10,7 @@ import { ReviewsSection } from "@/components/sections/ReviewsSection";
 import { TeamSection } from "@/components/sections/TeamSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import { ServiceAreasSection } from "@/components/sections/ServiceAreasSection";
+import { BrandWall } from "@/components/sections/BrandWall";
 import { EmergencyCta } from "@/components/cta/EmergencyCta";
 import { CtaBand } from "@/components/cta/CtaBand";
 import { getFeaturedServices, getHomeFaqs } from "@/server/content/read";
@@ -61,6 +62,13 @@ export default async function HomePage() {
 
       <ReviewsSection />
       <ServiceAreasSection tone="light" />
+      {/*
+        Near the foot of the page, after the reasons to trust the company and
+        before the closing call to action. Someone still reading this far is
+        checking whether their own equipment is covered, which is exactly the
+        question this section answers.
+      */}
+      <BrandWall />
       <FaqSection faqs={await getHomeFaqs()} tone="muted" />
       <CtaBand />
     </>
