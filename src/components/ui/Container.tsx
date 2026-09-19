@@ -3,6 +3,19 @@ import { cn } from "@/lib/utils";
 /**
  * Horizontal page gutter. Every section uses this so content lines up on a
  * single vertical rhythm at every breakpoint.
+ *
+ * Each size keeps growing past 1280px rather than stopping there. It used to
+ * stop, which looked right on the 1366px laptop the site was built on — 95% of
+ * the screen — and looked like a column down the middle of anything larger:
+ * 67% of a 1920 display, 50% of a 2560 one. The same page, half empty, on the
+ * machines most desktop visitors actually use.
+ *
+ * They still stop somewhere, deliberately. Width is not free: a line of body
+ * text past about 80 characters is measurably harder to read, because the eye
+ * loses its place on the return sweep. So the caps rise with the screen and
+ * then hold, and `narrow` — the long-form reading measure — barely moves at
+ * all. The goal is a page that looks composed on a large display, not one
+ * stretched across it.
  */
 export function Container({
   children,
@@ -17,10 +30,15 @@ export function Container({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-5 sm:px-6 lg:px-8",
-        size === "narrow" && "max-w-3xl",
-        size === "default" && "max-w-6xl",
-        size === "wide" && "max-w-7xl",
+        // The gutter grows too, so content never runs to the bezel on a big
+        // screen and never wastes width on a small one.
+        "mx-auto w-full px-5 sm:px-6 lg:px-8 2xl:px-10 3xl:px-12",
+        // Reading measure. One step at the very top and no further: this is
+        // the one place where more width makes the page worse.
+        size === "narrow" && "max-w-3xl 3xl:max-w-4xl",
+        size === "default" && "max-w-6xl 2xl:max-w-7xl 3xl:max-w-[1500px]",
+        size === "wide" &&
+          "max-w-7xl 2xl:max-w-[1500px] 3xl:max-w-[1720px] 4xl:max-w-[1880px]",
         className,
       )}
     >

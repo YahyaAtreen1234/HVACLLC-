@@ -18,7 +18,28 @@
    * stacked after `lg:` did not compile, and the failure was silent: the class
    * simply never appeared in the stylesheet and the element stayed visible.
    */
-  --breakpoint-roomy: 1150px;
+  --breakpoint-roomy: 71.875rem; /* 1150px */
+
+  /*
+   * Above Tailwind's 2xl (1536px) there were no breakpoints, so every layout
+   * stopped growing at 1280px and simply centred itself in whatever was left.
+   * That reads as full-width on a 1366px laptop, which is what it was built
+   * on, and as a column down the middle of a 1920 or 2560 display — 67% and
+   * 50% of the screen respectively.
+   *
+   * `3xl` is 1920 because that is the next real step in monitors people own:
+   * 1366 and 1440 laptops, 1920 desktops and larger laptops, then 2560 and
+   * up. `4xl` catches 1440p and ultrawide.
+   *
+   * Declared in rem, not px, and that matters. Tailwind emits its own
+   * breakpoints in rem and orders the generated media queries by the value as
+   * written; a custom breakpoint given in px sorts into the wrong place, so
+   * `2xl` ended up after `3xl` in the stylesheet and won at every width above
+   * 1920 — the wide container stayed at its 2xl size on a 2560 display and
+   * the new breakpoints looked like they were being ignored.
+   */
+  --breakpoint-3xl: 120rem; /* 1920px */
+  --breakpoint-4xl: 150rem; /* 2400px */
 
   /* Typography ---------------------------------------------------------- */
   --font-display: var(--font-archivo), "Archivo", ui-sans-serif, system-ui,
