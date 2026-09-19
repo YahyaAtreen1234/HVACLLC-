@@ -1,5 +1,9 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { env } from "./env";
+import {
+  services as seedDefaultServices,
+  featuredServiceSlugs,
+} from "@/data/services";
 
 /**
  * PostgreSQL connection.
@@ -14,7 +18,7 @@ import { env } from "./env";
  * server was restarted.
  */
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 /**
  * Advisory lock id for migrations. Any fixed number works; it only has to be
@@ -22,6 +26,9 @@ const SCHEMA_VERSION = 5;
  * both decide the schema is out of date and race each other.
  */
 const MIGRATION_LOCK_ID = 4_912_007;
+
+/** Which shipped services are flagged featured, for migration 6. */
+const defaultFeaturedSlugs = new Set<string>(featuredServiceSlugs);
 
 interface DbGlobal {
   __pgPool?: Pool;
@@ -335,6 +342,60 @@ async function migrate(client: PoolClient): Promise<void> {
             SET image_src = $1, image_alt = $2, updated_at = $3
           WHERE slug = $4 AND image_src = ''`,
         [src, alt, new Date().toISOString(), slug],
+      );
+    }
+  }
+
+  // Migration 6 — put the services back.
+  //
+  // The live services table was empty, and had been for some time. Every
+  // /services/<slug> page returned 404, the services listing rendered with no
+  // services in it, and the sitemap carried none. It was not visible from the
+  // outside because nothing errors: an empty table is a successful read of
+  // zero rows, so the fallback to the shipped data file never triggers — that
+  // only happens when the database is unreachable.
+  //
+  // It also explains why migrations 4 and 5 reported success and changed
+  // nothing. Both were UPDATEs keyed on slug, and there were no rows to match.
+  //
+  // The seeder cannot fix this. It is gated behind one `content.seeded` flag,
+  // deliberately, so that clearing content in the admin panel does not bring
+  // the defaults back on the next boot. Once that flag is set an empty table
+  // stays empty forever. That guarantee is worth keeping, so this repairs the
+  // damage once rather than changing how seeding works.
+  //
+  // Insert-only and keyed on slug, so a service edited in /admin/services is
+  // untouched and running twice is harmless.
+  if (current < 6) {
+    for (const [index, service] of seedDefaultServices.entries()) {
+      await client.query(
+        `INSERT INTO services (
+           id, slug, name, short_name, summary, description, icon, category,
+           body, includes, signs, related, image_src, image_alt,
+           featured, published, sort_order, updated_at
+         )
+         SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11::jsonb,
+                $12::jsonb,$13,$14,$15,TRUE,$16,$17
+         WHERE NOT EXISTS (SELECT 1 FROM services WHERE slug = $2)`,
+        [
+          `service-${service.slug}`,
+          service.slug,
+          service.name,
+          service.name,
+          service.summary,
+          service.title,
+          service.icon,
+          service.category,
+          JSON.stringify(service.body),
+          JSON.stringify(service.includes),
+          JSON.stringify(service.signs),
+          JSON.stringify(service.related ?? []),
+          service.image.src,
+          service.image.alt,
+          defaultFeaturedSlugs.has(service.slug),
+          index,
+          new Date().toISOString(),
+        ],
       );
     }
   }
