@@ -63,28 +63,56 @@ async function readOr<T>(
   }
 }
 
+/**
+ * The photograph shipped with the code for a service, used when the database
+ * row has none.
+ *
+ * The data file is the site's default content — it is already what `readOr`
+ * falls back to when the database is unreachable — so a row with no image
+ * should show the default rather than a placeholder panel. Anything the office
+ * sets in /admin/services still wins, because a non-empty row value is used as
+ * is and is never overwritten here.
+ *
+ * This exists because two migrations written to copy these paths into the
+ * database both reported success and changed nothing, on a database this code
+ * cannot inspect from here. Rather than keep guessing at the remote state, the
+ * page is made correct either way: if the rows do get their values the DB is
+ * used, and until then the shipped default fills the gap.
+ */
+function shippedImage(slug: string): Service["image"] | undefined {
+  return fallbackServices.find((service) => service.slug === slug)?.image;
+}
+
 export async function getServices(): Promise<Service[]> {
   return readOr(
     "services",
     async () =>
-      (await servicesStore.all()).map((row) => ({
-        slug: row.slug,
-        name: row.name,
-        title: row.description,
-        summary: row.summary,
-        icon: row.icon,
-        category: row.category as Service["category"],
-        includes: row.includes,
-        signs: row.signs,
-        body: row.body,
-        image: {
-          src: row.imageSrc,
-          alt: row.imageAlt,
-          width: 1200,
-          height: 800,
-        },
-        related: row.related,
-      })),
+      (await servicesStore.all()).map((row) => {
+        const shipped = shippedImage(row.slug);
+
+        return {
+          slug: row.slug,
+          name: row.name,
+          title: row.description,
+          summary: row.summary,
+          icon: row.icon,
+          category: row.category as Service["category"],
+          includes: row.includes,
+          signs: row.signs,
+          body: row.body,
+          image: {
+            src: row.imageSrc || shipped?.src || "",
+            // Alt follows whichever source supplied the picture. Taking the
+            // row's alt beside a shipped src would describe a different
+            // photograph, which is worse for a screen reader than no alt rule
+            // at all.
+            alt: row.imageSrc ? row.imageAlt : (shipped?.alt ?? row.name),
+            width: 1200,
+            height: 800,
+          },
+          related: row.related,
+        };
+      }),
     () => fallbackServices,
   );
 }
