@@ -1,5 +1,6 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { env } from "./env";
+import { services as seedServices } from "@/data/services";
 
 /**
  * PostgreSQL connection.
@@ -14,7 +15,7 @@ import { env } from "./env";
  * server was restarted.
  */
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 /**
  * Advisory lock id for migrations. Any fixed number works; it only has to be
@@ -280,6 +281,42 @@ async function migrate(client: PoolClient): Promise<void> {
       "UPDATE service_areas SET sort_order = $1 WHERE slug = 'phoenix'",
       [6],
     );
+  }
+
+  // Migration 4 — the job photographs the office supplied for each service.
+  //
+  // Every service row was created with an empty image_src, so each service
+  // page and card was drawing the placeholder panel. These are the company's
+  // own photographs of its own work — the far more persuasive thing to show a
+  // homeowner than stock photography, which the site refuses to use anyway.
+  //
+  // The values come from src/data/services.ts rather than being written out
+  // again here. Two copies of the same path and alt text would be two things
+  // to keep in step, and the one that drifts is always the copy nobody looks
+  // at — in this case the fallback used precisely when the database is down.
+  //
+  // Only fills rows that are still empty. A photograph swapped later in
+  // /admin/services must survive the next deploy, and `WHERE image_src = ''`
+  // is what guarantees that. Services with no suitable photograph — indoor air
+  // quality and thermostats, which nothing in the supplied set actually shows
+  // — are skipped here and keep their placeholder rather than borrowing a
+  // picture of something else.
+  if (current < 4) {
+    for (const service of seedServices) {
+      if (!service.image.src) continue;
+
+      await client.query(
+        `UPDATE services
+            SET image_src = $1, image_alt = $2, updated_at = $3
+          WHERE slug = $4 AND image_src = ''`,
+        [
+          service.image.src,
+          service.image.alt,
+          new Date().toISOString(),
+          service.slug,
+        ],
+      );
+    }
   }
 
   await client.query(

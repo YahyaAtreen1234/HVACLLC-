@@ -43,8 +43,8 @@ export const services: Service[] = [
       "If your system is losing refrigerant, we look for the leak rather than simply topping it up. Refrigerant is not consumed in normal operation, so a system that needs a recharge every season has a leak that is worth finding.",
     ],
     image: {
-      src: "",
-      alt: "HVAC technician measuring refrigerant pressures at an outdoor condensing unit with gauges",
+      src: "/images/services/ac-repair.webp",
+      alt: "Meter leads clipped to the contactor inside an open Daikin condenser, with a technician's tool bag on the ground beside it",
       width: 1200,
       height: 800,
     },
@@ -79,8 +79,8 @@ export const services: Service[] = [
       // TODO: add the specific brands installed once confirmed with the business.
     ],
     image: {
-      src: "",
-      alt: "New outdoor air conditioning condenser installed on a level pad beside a home",
+      src: "/images/services/ac-installation.webp",
+      alt: "A newly installed Daikin rooftop package unit joined to new sheet-metal ductwork on a shingle roof",
       width: 1200,
       height: 800,
     },
@@ -114,8 +114,8 @@ export const services: Service[] = [
       "If you smell gas, leave the building first and call your gas utility's emergency line from outside. Do not operate switches on your way out.",
     ],
     image: {
-      src: "",
-      alt: "Technician inspecting the burner assembly inside an open gas furnace cabinet",
+      src: "/images/services/furnace-repair.webp",
+      alt: "A Daikin furnace with both access panels off, exposing the burner assembly, inducer and control board",
       width: 1200,
       height: 800,
     },
@@ -149,8 +149,8 @@ export const services: Service[] = [
       "At commissioning, gas pressure, temperature rise and combustion are measured. Those readings confirm the furnace is burning cleanly and moving the air it was designed to move.",
     ],
     image: {
-      src: "",
-      alt: "Newly installed high-efficiency furnace with PVC venting in a clean basement mechanical room",
+      src: "/images/services/furnace-installation.webp",
+      alt: "A newly installed Daikin furnace and coil in an attic, with flue, gas line and condensate drain run to it",
       width: 1200,
       height: 800,
     },
@@ -184,8 +184,8 @@ export const services: Service[] = [
       "Ductless mini-splits solve problems ductwork cannot reach: converted garages, additions, sunrooms and older homes with no duct space. Each indoor head is controlled separately, so you are not conditioning rooms nobody is in.",
     ],
     image: {
-      src: "",
-      alt: "Wall-mounted ductless mini-split indoor head above a window in a finished room",
+      src: "/images/services/heat-pumps.webp",
+      alt: "Two Daikin heat pump condensers installed side by side along the wall of a Phoenix home",
       width: 1200,
       height: 800,
     },
@@ -220,8 +220,8 @@ export const services: Service[] = [
       // TODO: if the business offers a maintenance plan, add the real terms and price here.
     ],
     image: {
-      src: "",
-      alt: "Technician cleaning the fins of an outdoor condenser coil during a seasonal tune-up",
+      src: "/images/services/maintenance.webp",
+      alt: "Rinsing dust and debris out of a residential condenser coil with a hose during a tune-up",
       width: 1200,
       height: 800,
     },
@@ -290,8 +290,8 @@ export const services: Service[] = [
       "Where a room simply cannot be satisfied, the fix may be a new run, a larger return or a dedicated ductless head rather than more balancing at the registers.",
     ],
     image: {
-      src: "",
-      alt: "Sealed and insulated sheet metal supply duct trunk running through a basement ceiling",
+      src: "/images/services/ductwork.webp",
+      alt: "Insulated flexible ducts connected to a sheet-metal supply plenum in an attic",
       width: 1200,
       height: 800,
     },
@@ -361,8 +361,8 @@ export const services: Service[] = [
       // TODO: confirm which commercial equipment types and building sizes the business takes on.
     ],
     image: {
-      src: "",
-      alt: "Rows of commercial rooftop HVAC units on a flat roof under a clear sky",
+      src: "/images/services/commercial-hvac.webp",
+      alt: "The control compartment of a rooftop package unit opened for service, with an impact driver and tool bag on the roof",
       width: 1200,
       height: 800,
     },
