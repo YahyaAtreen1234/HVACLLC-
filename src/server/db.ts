@@ -1,6 +1,5 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { env } from "./env";
-import { services as seedServices } from "@/data/services";
 
 /**
  * PostgreSQL connection.
@@ -15,7 +14,7 @@ import { services as seedServices } from "@/data/services";
  * server was restarted.
  */
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 /**
  * Advisory lock id for migrations. Any fixed number works; it only has to be
@@ -283,38 +282,59 @@ async function migrate(client: PoolClient): Promise<void> {
     );
   }
 
-  // Migration 4 — the job photographs the office supplied for each service.
+  // Migration 4 — intentionally empty. Superseded by migration 5.
   //
-  // Every service row was created with an empty image_src, so each service
-  // page and card was drawing the placeholder panel. These are the company's
-  // own photographs of its own work — the far more persuasive thing to show a
-  // homeowner than stock photography, which the site refuses to use anyway.
+  // It set the service photographs by importing src/data/services.ts and
+  // looping over it. Deployed, it recorded itself and changed no rows, while
+  // every other database read carried on working — so it did not throw, the
+  // imported array simply arrived empty in the server bundle. The body is
+  // removed rather than left in place because a deployed migration that
+  // silently does nothing is a trap for whoever reads this next.
   //
-  // The values come from src/data/services.ts rather than being written out
-  // again here. Two copies of the same path and alt text would be two things
-  // to keep in step, and the one that drifts is always the copy nobody looks
-  // at — in this case the fallback used precisely when the database is down.
-  //
-  // Only fills rows that are still empty. A photograph swapped later in
-  // /admin/services must survive the next deploy, and `WHERE image_src = ''`
-  // is what guarantees that. Services with no suitable photograph — indoor air
-  // quality and thermostats, which nothing in the supplied set actually shows
-  // — are skipped here and keep their placeholder rather than borrowing a
-  // picture of something else.
-  if (current < 4) {
-    for (const service of seedServices) {
-      if (!service.image.src) continue;
+  // Databases that recorded version 4 get the photographs from migration 5;
+  // it is insert-only, so running after 4 is harmless either way.
 
+  // Migration 5 — the same photographs as migration 4, written literally.
+  //
+  // Migration 4 read them from src/data/services.ts to avoid keeping two
+  // copies of the same strings. It ran, recorded itself, and updated nothing:
+  // the service pages still rendered the placeholder afterwards, while every
+  // other database read kept working, which rules out an exception and leaves
+  // the imported array arriving empty in the server bundle. Whatever the cause,
+  // a migration that silently does nothing is worse than a repeated string.
+  //
+  // So the values are inline and the migration depends on no other module.
+  // tests/service-images.test.ts compares this list against the data file and
+  // fails if they disagree, which is the property the import was there to get.
+  //
+  // Still insert-only — `WHERE image_src = ''` — so a photograph changed in
+  // /admin/services is never overwritten by a deploy.
+  if (current < 5) {
+    const photos: Array<[slug: string, src: string, alt: string]> = [
+      ["ac-repair", "/images/services/ac-repair.webp",
+       "Meter leads clipped to the contactor inside an open Daikin condenser, with a technician's tool bag on the ground beside it"],
+      ["ac-installation", "/images/services/ac-installation.webp",
+       "A newly installed Daikin rooftop package unit joined to new sheet-metal ductwork on a shingle roof"],
+      ["furnace-repair", "/images/services/furnace-repair.webp",
+       "A Daikin furnace with both access panels off, exposing the burner assembly, inducer and control board"],
+      ["furnace-installation", "/images/services/furnace-installation.webp",
+       "A newly installed Daikin furnace and coil in an attic, with flue, gas line and condensate drain run to it"],
+      ["heat-pumps", "/images/services/heat-pumps.webp",
+       "Two Daikin heat pump condensers installed side by side along the wall of a Phoenix home"],
+      ["maintenance", "/images/services/maintenance.webp",
+       "Rinsing dust and debris out of a residential condenser coil with a hose during a tune-up"],
+      ["ductwork", "/images/services/ductwork.webp",
+       "Insulated flexible ducts connected to a sheet-metal supply plenum in an attic"],
+      ["commercial-hvac", "/images/services/commercial-hvac.webp",
+       "The control compartment of a rooftop package unit opened for service, with an impact driver and tool bag on the roof"],
+    ];
+
+    for (const [slug, src, alt] of photos) {
       await client.query(
         `UPDATE services
             SET image_src = $1, image_alt = $2, updated_at = $3
           WHERE slug = $4 AND image_src = ''`,
-        [
-          service.image.src,
-          service.image.alt,
-          new Date().toISOString(),
-          service.slug,
-        ],
+        [src, alt, new Date().toISOString(), slug],
       );
     }
   }
